@@ -52,4 +52,4 @@ None.
 | CONTROL_CORE | CONTROL_FUNCTION_CAPABILITY | function | Implement the control and recovery behavior. | {'attribute': 'functions', 'operator': 'contains', 'value': 'programmable_control'} | component-sourcing |
 | EXTERNAL_IO | EXTERNAL_INTERFACE_CAPABILITY | interface | Provide the exposed interface and boundary protection. | {'attribute': 'functions', 'operator': 'contains', 'value': 'protected_external_interface'} | component-sourcing |
 
-Source spec: `/tmp/JLCAIPCB-publish/skills/kicad-production-pcb/assets/golden-specs/pass-part-selection-basic.yaml`
+Source spec: `assets/golden-specs/pass-part-selection-basic.yaml`
