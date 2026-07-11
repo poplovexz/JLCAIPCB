@@ -1,0 +1,14 @@
+require_for_stages:
+  - local-mvp
+  - production-package
+  - order-ready
+require_when:
+  spec_closure_required: true
+  declared_sections:
+    - requirements
+    - verification
+  declared_list_sections:
+    - power_domains
+complexity_thresholds:
+  min_components_for_batches: 6
+  min_nets_for_batches: 5

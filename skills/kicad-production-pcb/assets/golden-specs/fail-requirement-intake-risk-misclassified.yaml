@@ -1,0 +1,54 @@
+benchmark:
+  checks:
+    - script: requirement_intake_gate.py
+      expected_exit: 1
+intake:
+  project_name: elevated_risk_board
+  user_intent: 制作一个市电加热控制板。
+  input_style: guided
+  use_environment: Indoor appliance.
+  connected_devices: 加热片。
+  power_source: 市电。
+  size_or_mechanical: Unknown.
+  manufacturing_intent: Prototype.
+  success_criteria: 控制加热片工作。
+  system_boundary: 控制和功率开关在板上。
+  failure_consequence: Unknown.
+  desired_end_target: local-mvp
+safety_screening:
+  level: standard
+  hazards: []
+  rationale: Incorrectly treated as an ordinary prototype.
+  blocks_automatic_assumptions: false
+evidence_inputs:
+  available: []
+  requested: []
+missing_information:
+  must_ask_now: []
+  can_defer: []
+  blocks_mvp: []
+  blocks_production: []
+  blocks_order_ready: []
+safe_assumptions:
+  - id: safe-risk-stage
+    assumption: Keep the work at requirements only.
+    reason: Risk data is incomplete.
+    risk: No design work is allowed.
+    stage_allowed: requirements-only
+unsafe_assumptions:
+  - id: unsafe-risk-details
+    unknown: Safety architecture.
+    why_not_guess: Failure can create a hazard.
+    required_before: local-mvp
+confirmation:
+  status: pending
+  confirmed_by: none
+  intake_revision: 1
+  confirmed_revision: 0
+  user_response_summary: Awaiting safety clarification.
+decision:
+  current_target: requirements-only
+  can_create_spec: false
+  can_generate_kicad: false
+  can_run_erc_drc: false
+  next_action: Correct the safety classification.

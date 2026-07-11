@@ -1,0 +1,4 @@
+benchmark:
+  expected_exit: 0
+  checks:
+    - tests/test_schematic_stage.py

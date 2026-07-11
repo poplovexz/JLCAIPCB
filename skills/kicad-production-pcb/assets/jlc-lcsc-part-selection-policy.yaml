@@ -1,0 +1,117 @@
+production_stage_values:
+  - fabrication
+  - order-ready
+  - order_ready
+  - order-ready-blocked
+  - order_ready_blocked
+  - production
+  - production-package
+  - production_package
+  - release
+
+manufacturing_targets:
+  - jlcpcb
+  - 嘉立创
+  - lcsc
+
+selected_part_fields:
+  - lcsc_part
+  - jlcpcb_part
+  - supplier_part
+  - supplier_sku
+
+require_architecture_gate_before_selection: true
+architecture_trace_field: architecture_trace
+architecture_trace_block_field: block_ids
+architecture_trace_constraint_field: constraint_ids
+architecture_selection_constraints_field: selection_constraints
+required_architecture_block_scopes:
+  - onboard
+  - mixed
+architecture_block_exempt_categories:
+  - mechanical
+  - external_device
+require_each_selected_component_trace: true
+require_required_block_coverage: true
+require_required_constraint_coverage: true
+architecture_trace_nonprocured_coverage_fields:
+  - manual_fit
+  - hand_assembly
+architecture_trace_nonprocured_coverage_status_values:
+  - manual_fit
+  - hand_assembly
+
+required_identity_fields:
+  - manufacturer
+  - mpn
+
+required_design_fields:
+  - package
+  - footprint_candidate
+
+evidence_any_fields:
+  - source_url
+  - supplier_url
+  - purchase_url
+  - lcsc_url
+  - datasheet
+
+assembly_package_fields:
+  - footprint_package_token
+  - package
+  - lcsc_packaging
+
+status_fields:
+  - source_status
+  - part_status
+  - status
+
+ready_status_values:
+  - locked
+  - selected
+  - verified
+  - selected_final
+  - source_locked
+  - source_verified
+allow_ready_status_without_supplier_part: false
+
+nonblocking_status_values:
+  - dnp
+  - manual_fit
+  - hand_assembly
+  - virtual
+  - mechanical_only
+  - not_procured
+
+dnp_fields:
+  - dnp
+  - manual_fit
+  - hand_assembly
+  - virtual
+
+excluded_ref_prefixes:
+  - H
+
+excluded_footprint_tokens:
+  - MountingHole
+  - Fiducial
+
+unknown_tokens:
+  - TODO
+  - TBD
+  - UNKNOWN
+  - PENDING
+  - FIXME
+
+require_package_token_when_assembly_enabled: true
+require_pcba_availability_when_assembly_enabled: true
+
+pcba_availability_fields:
+  - jlcpcb_available
+  - pcba_available
+  - assembly_available
+
+stock_fields:
+  - in_stock
+  - observed_stock
+  - stock

@@ -1,0 +1,4 @@
+benchmark:
+  expected_exit: 0
+  checks:
+    - script: tests/test_layout_batch_transaction.py

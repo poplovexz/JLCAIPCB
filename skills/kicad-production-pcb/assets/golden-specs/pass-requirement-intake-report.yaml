@@ -1,0 +1,71 @@
+benchmark:
+  checks:
+    - script: requirement_intake_gate.py
+intake:
+  project_name: guided_controller_board
+  user_intent: Build a small controller board for a described use case.
+  input_style: guided
+  use_environment: Indoor bench prototype.
+  connected_devices: One external low-voltage device, exact model unknown.
+  power_source: USB or external adapter, not yet selected.
+  size_or_mechanical: No enclosure or mounting constraint known.
+  manufacturing_intent: Prototype first; factory assembly not decided.
+  success_criteria: The external device can be controlled during a bench test.
+  system_boundary: The board controls the device; the device remains external.
+  failure_consequence: Bench prototype stops working without a known safety hazard.
+  desired_end_target: local-mvp
+budget_intent:
+  status: unknown
+  scope: unknown
+  currency: CNY
+  target_amount: null
+  maximum_amount: null
+  quantity_basis: null
+  includes: [components, pcb-fabrication]
+  priority: balanced
+  user_statement: Budget has not been decided for this bench MVP.
+  allow_mvp_without_limit: true
+safety_screening:
+  level: standard
+  hazards: []
+  rationale: Low-voltage indoor bench use is described.
+  blocks_automatic_assumptions: false
+evidence_inputs:
+  available: []
+  requested:
+    - type: device_photo
+      reason: Identify the external device before the draft spec is finalized.
+      required_before: draft-spec
+missing_information:
+  must_ask_now:
+    - Choose USB or external adapter power before architecture.
+  can_defer:
+    - Exact enclosure dimensions.
+  blocks_mvp: []
+  blocks_production:
+    - Exact load model and current.
+  blocks_order_ready:
+    - External manufacturing review evidence.
+safe_assumptions:
+  - id: safe-mvp-only
+    assumption: Keep the first result as MVP only.
+    reason: The user has not supplied production details.
+    risk: The board cannot be claimed production-ready.
+    stage_allowed: local-mvp
+unsafe_assumptions:
+  - id: unsafe-load-rating
+    unknown: Exact load current.
+    why_not_guess: It controls connector, power, copper, and protection sizing.
+    required_before: production-package
+confirmation:
+  status: pending
+  confirmed_by: none
+  intake_revision: 1
+  confirmed_revision: 0
+  user_response_summary: Awaiting user confirmation.
+decision:
+  current_target: requirements-only
+  can_create_spec: false
+  can_generate_kicad: false
+  can_run_erc_drc: false
+  next_action: Ask the minimum power and connected-device questions, then request confirmation.

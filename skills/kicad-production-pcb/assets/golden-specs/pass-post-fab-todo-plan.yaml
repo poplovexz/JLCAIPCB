@@ -1,0 +1,40 @@
+benchmark:
+  expected_exit: 0
+  checks:
+    - script: todo_blocker_check.py
+      args: ["--production"]
+      expected_exit: 0
+    - spec_closure_check.py
+
+project:
+  name: pass_post_fab_todo_plan
+  stage: production-package
+  output_dir: projects/pass_post_fab_todo_plan
+  artifacts_dir: artifacts
+
+validation:
+  spec_closure:
+    required: true
+    required_areas: [todo_disposition, stage]
+
+post_fab_validation_plan:
+  - id: first_power_on
+    category: post_fab_bringup
+    description: "Power the assembled board after fabrication."
+  - id: load_test
+    category: post_fab_lab_test
+    description: "Run real load and temperature checks after fabrication."
+
+todo:
+  - category: post_fab_bringup
+    status: open
+    blocking: true
+    owner: codex
+    next_action: "Run first power-on after the manufactured board is received."
+    text: "First power-on is a post-fabrication validation item."
+  - category: post_fab_lab_test
+    status: open
+    blocking: true
+    owner: codex
+    next_action: "Measure load behavior and temperature after assembly."
+    text: "Real load and thermal tests happen after fabrication."

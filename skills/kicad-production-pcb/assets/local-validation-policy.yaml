@@ -1,0 +1,20 @@
+schema_version: 1
+manifest_schema_version: 1
+required_project_stages: [local-mvp, production-package, production, release, fabrication, order-ready, order-ready-blocked]
+artifact_subdir: local-validation
+manifest_filename: local-validation-manifest.yaml
+erc_json_filename: erc.json
+drc_json_filename: drc.json
+erc_report_filename: erc.rpt
+drc_report_filename: drc.rpt
+required_results:
+  erc_violations: 0
+  drc_violations: 0
+  unconnected_items: 0
+executor_dependencies:
+  - scripts/_pcb_skill_checks.py
+  - scripts/_package_binding_stage.py
+  - scripts/_schematic_stage.py
+  - scripts/_package_binding_stage.py
+  - scripts/_layout_stage.py
+  - scripts/_routing_stage.py

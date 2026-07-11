@@ -1,0 +1,1 @@
+{"record_type":"supplier_snapshot_fixture","manufacturer":"Reference Interconnect Co","mpn":"RI02-P1","supplier_part":"C910003","package":{"name":"CONN-02","pin_count":2},"inventory":{"in_stock":9000,"moq":5,"order_multiple":5,"observed_at":"2026-07-10T08:00:00Z"},"pricing":{"currency":"CNY","unit_price":0.42}}

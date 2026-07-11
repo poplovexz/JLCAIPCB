@@ -1,0 +1,32 @@
+schema_version: 1
+routing_schema_versions: [1]
+manifest_schema_version: 1
+ready_states: [ready, frozen]
+required_project_stages: [local-mvp, production-package, production, release, fabrication, order-ready, order-ready-blocked]
+strategies: [manual, generated, hybrid, autoroute-candidate]
+batch_methods: [manual, generated, freerouting]
+batch_states: [planned, routed, locked]
+required_routing_fields: [schema_version, state, revision, strategy, batches, net_constraints]
+required_batch_fields: [id, order, nets, method, state, rationale]
+required_net_constraint_fields: [net_class, connection_mode, topology, allowed_layers, min_width_mm, max_vias, rationale]
+connection_modes: [tracks, zone, mixed]
+topologies: [point-to-point, daisy-chain, star, tree, plane, mixed]
+topology_coordinate_tolerance_mm: 0.001
+required_differential_pair_fields: [id, nets, target_gap_mm, gap_tolerance_mm, max_skew_mm, min_coupled_ratio, rationale]
+differential_pair_sample_step_mm: 0.5
+default_evidence_subdir: routing-stage
+default_evidence_filename: routing-stage.yaml
+candidate_defaults:
+  timeout_seconds: 900
+  max_attempts: 8
+  max_consecutive_failures: 3
+  max_no_improvement: 3
+  keep_failed_candidates: false
+score_weights:
+  via: 50
+  segment_mm: 1
+  layer_change: 25
+executor_dependencies:
+  - scripts/_pcb_skill_checks.py
+  - scripts/_package_binding_stage.py
+  - scripts/_layout_stage.py

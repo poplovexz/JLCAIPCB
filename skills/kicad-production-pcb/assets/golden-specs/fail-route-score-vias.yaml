@@ -1,0 +1,20 @@
+benchmark:
+  expected_exit: 0
+  checks:
+    - script: route_score_check.py
+      args: ["--require"]
+      expected_exit: 1
+
+project:
+  name: fail_route_score_vias
+  output_dir: projects/fail_route_score_vias
+  artifacts_dir: artifacts
+
+routing:
+  freerouting:
+    pcb_file: ../golden-routing/simple_route.kicad_pcb
+
+validation:
+  freerouting:
+    route_score:
+      max_vias: 0

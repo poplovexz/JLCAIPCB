@@ -1,0 +1,54 @@
+benchmark:
+  checks:
+    - script: requirement_intake_gate.py
+      expected_exit: 1
+intake:
+  project_name: premature_generation_board
+  user_intent: Build a low-risk indoor prototype.
+  input_style: guided
+  use_environment: Indoor bench.
+  connected_devices: One external device.
+  power_source: External low-voltage adapter.
+  size_or_mechanical: No known limit.
+  manufacturing_intent: Prototype first.
+  success_criteria: The external device responds.
+  system_boundary: The board controls an external device.
+  failure_consequence: Prototype stops without a known safety hazard.
+  desired_end_target: local-mvp
+safety_screening:
+  level: standard
+  hazards: []
+  rationale: Low-voltage indoor use.
+  blocks_automatic_assumptions: false
+evidence_inputs:
+  available: []
+  requested: []
+missing_information:
+  must_ask_now: []
+  can_defer: []
+  blocks_mvp: []
+  blocks_production: []
+  blocks_order_ready: []
+safe_assumptions:
+  - id: safe-premature-mvp
+    assumption: Keep the result at local MVP.
+    reason: Production evidence is not available.
+    risk: It is not production-ready.
+    stage_allowed: local-mvp
+unsafe_assumptions:
+  - id: unsafe-premature-production
+    unknown: Final production details.
+    why_not_guess: They affect manufacturing release.
+    required_before: production-package
+confirmation:
+  status: pending
+  confirmed_by: none
+  intake_revision: 1
+  confirmed_revision: 0
+  user_response_summary: Awaiting user confirmation.
+decision:
+  current_target: requirements-only
+  can_create_spec: false
+  can_generate_kicad: true
+  can_run_erc_drc: false
+  next_action: Incorrectly generate KiCad before confirmation.

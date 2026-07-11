@@ -1,0 +1,11 @@
+schema_version: 1
+project_name: replace-me
+candidate_id: replace-me
+batch_id: replace-me
+base_spec_sha256: replace-me
+routing_revision: 1
+candidate_pcb: artifacts/routing-candidates/replace-me/candidate.kicad_pcb
+generator: freerouting
+tool_version: replace-me
+command_evidence: artifacts/routing-candidates/replace-me/command.json
+command_evidence_sha256: replace-me

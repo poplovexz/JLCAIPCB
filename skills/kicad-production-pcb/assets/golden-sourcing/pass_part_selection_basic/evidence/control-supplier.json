@@ -1,0 +1,1 @@
+{"record_type":"supplier_snapshot_fixture","manufacturer":"Reference Logic Co","mpn":"RLX32-A1","supplier_part":"C910001","package":{"name":"QFN-32","pin_count":32},"inventory":{"in_stock":5000,"moq":1,"order_multiple":1,"observed_at":"2026-07-10T08:00:00Z"},"pricing":{"currency":"CNY","unit_price":8.2}}

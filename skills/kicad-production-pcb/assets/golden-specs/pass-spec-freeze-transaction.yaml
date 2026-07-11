@@ -1,0 +1,8 @@
+benchmark:
+  expected_exit: 0
+  checks:
+    - tests/test_spec_freeze.py
+
+project:
+  name: pass_spec_freeze_transaction
+  stage: draft

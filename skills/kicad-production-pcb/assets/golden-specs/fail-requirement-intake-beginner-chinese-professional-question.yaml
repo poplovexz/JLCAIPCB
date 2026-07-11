@@ -1,0 +1,78 @@
+benchmark:
+  checks:
+    - script: requirement_intake_gate.py
+      expected_exit: 1
+intake:
+  project_name: beginner_chinese_question_board
+  user_intent: 根据使用场景制作一块低风险室内原型板。
+  input_style: use_case_only
+  use_environment: 室内测试。
+  connected_devices: 型号未知的外部设备。
+  power_source: 未确定。
+  size_or_mechanical: 未确定。
+  manufacturing_intent: 先做本地原型。
+  success_criteria: 外部设备能够按描述响应。
+  system_boundary: 控制板和外部设备分开。
+  failure_consequence: 原型停止工作，不涉及已知安全风险。
+  desired_end_target: local-mvp
+safety_screening:
+  level: standard
+  hazards: []
+  rationale: 低压室内测试场景。
+  blocks_automatic_assumptions: false
+evidence_inputs:
+  available: []
+  requested:
+    - type: label_photo
+      reason: 帮助识别用户无法说出型号的设备。
+      required_before: draft-spec
+beginner:
+  input_style: use_case_only
+  question_strategy: practical_minimum
+  round: 1
+  max_rounds: 2
+  max_questions: 5
+  resolution_mode: ask_user
+  questions:
+    - id: q-professional-layout
+      category: interfaces
+      question: 你希望使用多大线宽和铜厚？
+      choices: [0.2毫米, 0.3毫米, 不知道]
+      recommended_choice: 0.2毫米
+      allow_unknown: true
+      reason: 这是过早询问专业实现参数。
+      blocks: architecture
+  deferred_professional_topics: []
+missing_information:
+  must_ask_now:
+    - 确定实际使用功能和供电方式。
+  can_defer:
+    - 专业实现参数。
+  blocks_mvp: []
+  blocks_production:
+    - 最终电气和制造参数。
+  blocks_order_ready:
+    - 外部制造审核证据。
+safe_assumptions:
+  - id: safe-chinese-mvp
+    assumption: 第一版只作为本地原型。
+    reason: 用户只提供了使用场景。
+    risk: 不能宣称可生产。
+    stage_allowed: local-mvp
+unsafe_assumptions:
+  - id: unsafe-chinese-production
+    unknown: 最终电气和制造参数。
+    why_not_guess: 会影响安全和生产。
+    required_before: production-package
+confirmation:
+  status: pending
+  confirmed_by: none
+  intake_revision: 1
+  confirmed_revision: 0
+  user_response_summary: 等待用户确认。
+decision:
+  current_target: requirements-only
+  can_create_spec: false
+  can_generate_kicad: false
+  can_run_erc_drc: false
+  next_action: 改成生活化问题后再请求确认。

@@ -1,0 +1,28 @@
+schema_version: 1
+project_name: TODO_PROJECT
+source:
+  identity: TODO_SUPPLIER_PART_OR_SOURCE_ID
+  evidence_id: TODO_LOCKED_SOURCE_EVIDENCE_ID
+  evidence_sha256: TODO
+  file: artifacts/sourcing/TODO_PROJECT/import-candidate/raw-source.json
+  sha256: TODO
+tool:
+  name: TODO_IMPORT_TOOL
+  version: TODO_TOOL_VERSION
+  command: TODO_RECORDED_COMMAND_OR_ARGUMENT_LIST
+candidate_directory: artifacts/sourcing/TODO_PROJECT/import-candidate/generated
+outputs:
+  - role: symbol
+    candidate_file: artifacts/sourcing/TODO_PROJECT/import-candidate/generated/TODO_PROJECT.kicad_sym
+    destination_file: projects/TODO_PROJECT/lib/TODO_PROJECT.kicad_sym
+    sha256: TODO
+  - role: footprint
+    candidate_file: artifacts/sourcing/TODO_PROJECT/import-candidate/generated/TODO_PROJECT.pretty/TODO_FOOTPRINT.kicad_mod
+    destination_file: projects/TODO_PROJECT/lib/TODO_PROJECT.pretty/TODO_FOOTPRINT.kicad_mod
+    sha256: TODO
+  - role: model
+    candidate_file: artifacts/sourcing/TODO_PROJECT/import-candidate/generated/TODO_PROJECT.3dshapes/TODO_MODEL.step
+    destination_file: projects/TODO_PROJECT/lib/TODO_PROJECT.3dshapes/TODO_MODEL.step
+    sha256: TODO
+provenance_output: artifacts/sourcing/TODO_PROJECT/evidence/TODO_IMPORT_PROVENANCE.json
+journal: artifacts/sourcing/TODO_PROJECT/transactions/library-import.json

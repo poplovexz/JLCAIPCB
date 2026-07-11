@@ -1,0 +1,82 @@
+benchmark:
+  checks:
+    - script: requirement_intake_gate.py
+      args: [--before-generation]
+project:
+  stage: local-mvp
+requirement_intake:
+  intake:
+    project_name: confirmed_beginner_board
+    user_intent: Build a low-risk indoor prototype from a confirmed use case.
+    input_style: use_case_only
+    use_environment: Indoor bench.
+    connected_devices: Confirmed external devices with references recorded in the draft spec.
+    power_source: Confirmed external low-voltage adapter.
+    size_or_mechanical: No enclosure constraint for the MVP.
+    manufacturing_intent: Local MVP first.
+    success_criteria: The connected devices respond during a bench test.
+    system_boundary: Control is on the board; loads and their power source are external.
+    failure_consequence: Prototype stops without a known safety hazard.
+    desired_end_target: local-mvp
+  budget_intent:
+    status: rough-range
+    scope: prototype-batch
+    currency: CNY
+    target_amount: 300
+    maximum_amount: 500
+    quantity_basis: 5
+    includes: [components, pcb-fabrication]
+    priority: balanced
+    user_statement: Keep the five-board MVP order below 500 CNY.
+    allow_mvp_without_limit: false
+  safety_screening:
+    level: standard
+    hazards: []
+    rationale: Confirmed low-voltage indoor bench use.
+    blocks_automatic_assumptions: false
+  evidence_inputs:
+    available:
+      - device references recorded in the spec
+    requested: []
+  beginner:
+    input_style: use_case_only
+    question_strategy: practical_minimum
+    round: 2
+    max_rounds: 2
+    max_questions: 5
+    resolution_mode: proceed_with_safe_assumptions
+    questions: []
+    deferred_professional_topics:
+      - Production sourcing and final mechanical evidence.
+  missing_information:
+    must_ask_now: []
+    can_defer:
+      - Final enclosure dimensions.
+    blocks_mvp: []
+    blocks_production:
+      - Production sourcing evidence.
+    blocks_order_ready:
+      - External manufacturing review evidence.
+  safe_assumptions:
+    - id: safe-confirmed-mvp
+      assumption: Keep the generated result at local MVP.
+      reason: The user confirmed the practical architecture.
+      risk: It is not production-ready.
+      stage_allowed: local-mvp
+  unsafe_assumptions:
+    - id: unsafe-final-production
+      unknown: Final production and enclosure constraints.
+      why_not_guess: They affect production and mechanical release.
+      required_before: production-package
+  confirmation:
+    status: confirmed
+    confirmed_by: user
+    intake_revision: 2
+    confirmed_revision: 2
+    user_response_summary: User confirmed the function, power choice, system boundary, and MVP target.
+  decision:
+    current_target: local-mvp
+    can_create_spec: true
+    can_generate_kicad: true
+    can_run_erc_drc: true
+    next_action: Generate the confirmed MVP spec and run local gates.

@@ -1,0 +1,58 @@
+benchmark:
+  expected_exit: 0
+  checks:
+    - script: verification_preflight.py
+      expected_exit: 1
+
+project:
+  name: fail_verification_risk_precheck
+  output_dir: projects/fail_verification_risk_precheck
+  artifacts_dir: artifacts
+
+nets:
+  - {name: DATA_P, class: signal}
+  - {name: DATA_N, class: signal}
+  - {name: VMAIN, class: power}
+
+components:
+  - ref: U1
+    value: LOAD
+    pads: {"1": VMAIN, "2": DATA_P, "3": DATA_N}
+
+routes:
+  - net: DATA_P
+    width_mm: 0.20
+    length_mm: 10.0
+  - net: DATA_N
+    width_mm: 0.20
+    length_mm: 18.0
+  - net: VMAIN
+    width_mm: 0.20
+    length_mm: 10.0
+
+verification:
+  signal_integrity:
+    differential_pairs:
+      - name: DATA_PAIR
+        nets: [DATA_P, DATA_N]
+        max_skew_mm: 1.0
+        require_length_check: true
+        stackup_required: true
+  power_integrity:
+    rails:
+      - name: VMAIN
+        nominal_v: 5.0
+        max_load_a: 1.0
+        power_domain: VMAIN
+        nets: [VMAIN]
+        min_route_width_mm: 0.50
+  thermal:
+    components:
+      - ref: U1
+        max_power_w: 1.0
+        max_junction_temp_c: 80
+  emc:
+    risk_items:
+      - name: DATA_CONNECTOR
+        category: external_cable
+        description: External data cable risk is listed without mitigation.

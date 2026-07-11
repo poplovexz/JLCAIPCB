@@ -1,0 +1,43 @@
+beginner_experience_values:
+  - beginner
+  - novice
+  - non_expert
+use_case_input_values:
+  - use_case_only
+  - scenario_only
+  - natural_language
+allowed_mvp_stages:
+  - requirements-only
+  - draft
+  - draft-spec
+  - local-mvp
+blocked_claim_stages:
+  - production-package
+  - order-ready
+  - order-ready-blocked
+  - production
+  - release
+  - fabrication
+required_user_profile_fields:
+  - experience
+  - input_style
+  - use_case
+required_assumption_profile_fields:
+  - level
+  - production_claim_allowed
+  - order_ready_allowed
+  - professional_review_required
+allowed_assumption_levels:
+  - conservative_beginner_mvp
+required_false_flags:
+  - production_claim_allowed
+  - order_ready_allowed
+required_true_flags:
+  - professional_review_required
+professional_decision_todo_categories:
+  - user_input
+  - datasheet_review
+  - web_dfm
+  - bringup
+  - lab_test
+  - simulation

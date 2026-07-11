@@ -1,0 +1,119 @@
+schema_version: 1
+manifest_schema_version: 1
+binding_manifest_schema_versions: [2]
+pinmap_schema_versions: [2]
+geometry_schema_versions: [1]
+datasheet_pin_table_schema_versions: [1]
+import_provenance_schema_versions: [1]
+ready_statuses: [verified]
+library_origins: [trusted, imported, custom]
+imported_origins: [imported]
+required_mapping_fields:
+  - datasheet_pin
+  - datasheet_pin_name
+  - function
+  - symbol_pin
+  - symbol_pin_name
+  - symbol_electrical_type
+  - footprint_pad
+  - disposition
+  - source_locator
+required_pinmap_fields:
+  - schema_version
+  - status
+  - ref
+  - symbol_id
+  - footprint
+  - source_evidence_ids
+  - source_evidence_sha256
+  - symbol_file_sha256
+  - footprint_file_sha256
+  - mappings
+connected_dispositions: [connected]
+unconnected_dispositions: [no_connect]
+orientation:
+  allowed_datasheet_views: [top, bottom]
+  allowed_placement_origins: [body_center, manufacturer_defined]
+  allowed_bottom_side_transforms: [mirror_then_rotate, rotate_then_mirror, not_applicable]
+  allowed_polarity_kinds: [none, pin1, cathode, anode, positive, negative, keyed, custom]
+  required_fields:
+    - datasheet_view
+    - pin1_reference
+    - footprint_zero_axis
+    - placement_origin
+    - cpl_rotation_offset_deg
+    - bottom_side_transform
+    - polarity_kind
+    - source_evidence_id
+    - source_evidence_sha256
+    - source_locator
+  pcba_independent_source_fields:
+    - assembly_source_evidence_id
+    - assembly_source_evidence_sha256
+    - assembly_source_locator
+  pcba_independent_source_kinds: [assembly-snapshot, supplier-snapshot]
+geometry:
+  required_fields:
+    - schema_version
+    - status
+    - source_evidence_ids
+    - source_evidence_sha256
+    - source_locator
+    - body_dimensions_mm
+    - pads
+    - features
+    - fabrication_contract
+  required_body_dimensions: [length, width, height]
+  dimension_tolerance_mm: 0.001
+  required_fabrication_contract_fields:
+    - courtyard
+    - fab_outline
+    - silkscreen_pin1_marker
+    - paste_strategy
+    - exposed_pad_strategy
+    - model_disposition
+    - placement_anchor
+  verified_presence_statuses: [verified, not_applicable]
+  model_dispositions: [present, not_available, not_required]
+datasheet_pin_table:
+  required_fields:
+    - schema_version
+    - status
+    - manufacturer
+    - mpn
+    - package
+    - source
+    - extractor
+    - records
+  required_source_fields: [evidence_id, evidence_sha256, file, file_sha256]
+  required_extractor_fields: [name, version, method]
+  required_record_fields: [pin, name, function, source_locator]
+import_provenance:
+  required_fields:
+    - schema_version
+    - status
+    - tool
+    - source
+    - outputs
+    - transaction
+    - executor_sha256
+  required_tool_fields: [name, version, command]
+  required_source_fields: [identity, evidence_id, evidence_sha256, file, sha256]
+  required_transaction_fields: [candidate_directory, manifest, manifest_sha256, promoted]
+library_import_transaction:
+  schema_versions: [1]
+  required_fields: [schema_version, project_name, source, tool, candidate_directory, outputs, provenance_output, journal]
+  required_source_fields: [identity, evidence_id, evidence_sha256, file, sha256]
+  required_tool_fields: [name, version, command]
+  required_output_fields: [role, candidate_file, destination_file, sha256]
+  required_roles: [symbol, footprint]
+  allowed_roles: [symbol, footprint, model]
+  role_suffixes:
+    symbol: [.kicad_sym]
+    footprint: [.kicad_mod]
+    model: [.step, .stp, .wrl]
+default_evidence_subdir: package-binding
+default_evidence_filename: package-binding-stage.yaml
+executor_dependencies:
+  - scripts/_kicad_sexpr.py
+  - scripts/_pcb_skill_checks.py

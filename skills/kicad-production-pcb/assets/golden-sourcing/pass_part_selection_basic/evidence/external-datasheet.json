@@ -1,0 +1,1 @@
+{"record_type":"manufacturer_datasheet_fixture","manufacturer":"Reference Interconnect Co","mpn":"RI04-A1","package":{"name":"CONN-04","pin_count":4},"lifecycle":{"status":"active"},"capabilities":{"functions":["protected_external_interface"],"signal_voltage":{"value":3.3,"unit":"V"},"interface_family":["generic-control"],"protection_strategies":["clamp"]}}

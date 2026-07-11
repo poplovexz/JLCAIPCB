@@ -1,0 +1,9 @@
+benchmark:
+  expected_exit: 0
+  checks:
+    - script: tests/test_routing_stage.py
+
+project:
+  name: pass_routing_stage_regressions
+  output_dir: projects/pass_routing_stage_regressions
+  artifacts_dir: artifacts

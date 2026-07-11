@@ -1,0 +1,1 @@
+{"record_type":"supplier_snapshot_fixture","manufacturer":"Reference Interconnect Co","mpn":"RI04-A1","supplier_part":"C910002","package":{"name":"CONN-04","pin_count":4},"inventory":{"in_stock":8000,"moq":5,"order_multiple":5,"observed_at":"2026-07-10T08:00:00Z"},"pricing":{"currency":"CNY","unit_price":0.55}}

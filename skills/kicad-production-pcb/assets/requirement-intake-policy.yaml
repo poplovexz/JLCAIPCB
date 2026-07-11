@@ -1,0 +1,377 @@
+allowed_targets:
+  - requirements-only
+  - draft-spec
+  - local-mvp
+  - production-package
+  - order-ready
+
+desired_end_targets:
+  - requirements-only
+  - draft-spec
+  - local-mvp
+  - production-package
+  - order-ready
+
+protected_policy_override_targets:
+  - production-package
+  - order-ready
+
+protected_policy_override_stages:
+  - fabrication
+  - production
+  - production-package
+  - release
+  - order-ready
+  - order-ready-blocked
+
+required_top_sections:
+  - intake
+  - budget_intent
+  - safety_screening
+  - evidence_inputs
+  - missing_information
+  - safe_assumptions
+  - unsafe_assumptions
+  - confirmation
+  - decision
+
+required_intake_fields:
+  - project_name
+  - user_intent
+  - input_style
+  - use_environment
+  - connected_devices
+  - power_source
+  - size_or_mechanical
+  - manufacturing_intent
+  - success_criteria
+  - system_boundary
+  - failure_consequence
+  - desired_end_target
+
+budget_required_fields:
+  - status
+  - scope
+  - currency
+  - includes
+  - priority
+  - user_statement
+  - allow_mvp_without_limit
+
+budget_statuses:
+  - known
+  - rough-range
+  - unknown
+
+budget_known_statuses:
+  - known
+  - rough-range
+
+budget_unresolved_currency_values:
+  - unknown
+  - TODO
+  - TBD
+  - 不知道
+  - 不确定
+
+budget_scopes:
+  - per-assembled-board
+  - prototype-batch
+  - bare-pcb-only
+  - complete-device
+  - unknown
+
+budget_priorities:
+  - balanced
+  - lowest-cost
+  - availability-first
+  - smallest-size
+  - lifecycle-quality
+
+budget_include_categories:
+  - components
+  - pcb-fabrication
+  - assembly
+  - shipping
+  - tax
+  - tooling
+  - enclosure
+  - external-accessories
+
+budget_minimum_amount: 0.01
+budget_maximum_amount: 1000000000
+budget_maximum_quantity_basis: 1000000
+budget_unknown_scope: unknown
+budget_unknown_allows_mvp: true
+budget_targets_requiring_known_limit:
+  - production-package
+  - order-ready
+budget_required_production_categories:
+  - components
+  - pcb-fabrication
+
+required_missing_information_fields:
+  - must_ask_now
+  - can_defer
+  - blocks_mvp
+  - blocks_production
+  - blocks_order_ready
+
+required_safe_assumption_fields:
+  - id
+  - assumption
+  - reason
+  - risk
+  - stage_allowed
+
+required_unsafe_assumption_fields:
+  - id
+  - unknown
+  - why_not_guess
+  - required_before
+
+required_decision_fields:
+  - current_target
+  - can_create_spec
+  - can_generate_kicad
+  - can_run_erc_drc
+  - next_action
+
+decision_boolean_fields:
+  - can_create_spec
+  - can_generate_kicad
+  - can_run_erc_drc
+
+safety_required_fields:
+  - level
+  - hazards
+  - rationale
+  - blocks_automatic_assumptions
+
+safety_levels:
+  - unknown
+  - standard
+  - elevated
+  - safety-critical
+
+safety_levels_requiring_block:
+  - unknown
+  - elevated
+  - safety-critical
+
+safety_levels_requiring_hazards:
+  - elevated
+  - safety-critical
+
+safety_standard_level: standard
+
+safety_scan_intake_fields:
+  - user_intent
+  - use_environment
+  - connected_devices
+  - power_source
+  - failure_consequence
+
+safety_elevated_terms:
+  - mains
+  - high voltage
+  - lithium charging
+  - battery charging
+  - heater
+  - heating element
+  - vehicle
+  - automotive
+  - medical
+  - life support
+  - human safety
+  - outdoor wet
+  - 市电
+  - 高压
+  - 锂电池充电
+  - 电池充电
+  - 加热器
+  - 加热片
+  - 汽车
+  - 车载
+  - 医疗
+  - 生命支持
+  - 人身安全
+  - 户外潮湿
+
+evidence_required_fields:
+  - available
+  - requested
+
+evidence_request_required_fields:
+  - type
+  - reason
+  - required_before
+
+evidence_types:
+  - device_photo
+  - connector_photo
+  - label_photo
+  - adapter_label_photo
+  - product_link
+  - datasheet_or_manual
+  - enclosure_drawing
+  - dimension_photo
+  - existing_module_photo
+  - other
+
+confirmation_required_fields:
+  - status
+  - confirmed_by
+  - intake_revision
+  - confirmed_revision
+  - user_response_summary
+
+confirmation_statuses:
+  - pending
+  - confirmed
+  - revision_requested
+
+confirmation_confirmed_status: confirmed
+
+confirmation_unconfirmed_statuses:
+  - pending
+  - revision_requested
+
+confirmation_user_values:
+  - user
+
+confirmation_unconfirmed_values:
+  - none
+
+confirmation_unconfirmed_targets:
+  - requirements-only
+
+confirmation_unconfirmed_must_be_false:
+  - can_create_spec
+  - can_generate_kicad
+  - can_run_erc_drc
+
+confirmation_confirmed_must_be_true:
+  - can_create_spec
+
+beginner_input_styles:
+  - use_case_only
+  - scenario_only
+  - natural_language
+
+beginner_allowed_targets:
+  - requirements-only
+  - draft-spec
+  - local-mvp
+
+beginner_required_section: beginner
+beginner_max_questions: 5
+beginner_max_rounds: 2
+beginner_min_choices: 2
+beginner_max_choices: 6
+
+beginner_required_fields:
+  - input_style
+  - question_strategy
+  - round
+  - max_rounds
+  - max_questions
+  - resolution_mode
+  - questions
+  - deferred_professional_topics
+
+beginner_question_required_fields:
+  - id
+  - category
+  - question
+  - choices
+  - recommended_choice
+  - allow_unknown
+  - reason
+  - blocks
+
+beginner_question_categories:
+  - function
+  - quantity
+  - power_source
+  - interfaces
+  - environment
+  - mechanical
+  - manufacturing
+  - budget
+  - evidence
+  - success_criteria
+  - safety_consequence
+  - system_boundary
+
+beginner_question_blocks:
+  - architecture
+  - safety
+  - system_boundary
+  - mvp
+  - production-package
+  - order-ready
+  - manufacturing
+  - confirmation
+
+beginner_resolution_modes:
+  - ask_user
+  - awaiting_confirmation
+  - proceed_with_safe_assumptions
+  - blocked_for_safety
+
+beginner_question_resolution_mode: ask_user
+
+beginner_unknown_choice_tokens:
+  - unknown
+  - not sure
+  - i do not know
+  - i don't know
+  - 不知道
+  - 不确定
+  - 看不懂
+
+beginner_forbidden_question_terms:
+  - impedance
+  - differential pair
+  - ESR
+  - TVS
+  - ESD diode
+  - DNP
+  - CPL
+  - stall current
+  - inrush current
+  - wire gauge
+  - trace width
+  - copper weight
+  - LDO
+  - regulator dropout
+  - pick and place
+  - reflow profile
+  - 阻抗
+  - 差分对
+  - 差分线
+  - 等效串联电阻
+  - 静电二极管
+  - 不贴装
+  - 贴片坐标
+  - 堵转电流
+  - 浪涌电流
+  - 线规
+  - 走线宽度
+  - 线宽
+  - 铜厚
+  - 铜重
+  - 稳压器压差
+  - 回流焊
+
+beginner_min_safe_assumptions: 1
+beginner_min_unsafe_assumptions: 1
+
+blocked_generation_targets:
+  - requirements-only
+  - draft-spec
+
+blocked_generation_stages:
+  - requirements-only
+  - draft-spec

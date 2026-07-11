@@ -1,0 +1,68 @@
+sourcing:
+  schema_version: 1
+  context:
+    region: TODO
+    currency: TODO
+    board_quantity: 1
+    attrition_rate: 0.1
+    max_candidates_per_requirement: 5
+    max_search_rounds: 3
+    stock_max_age_hours: 24
+    lock_max_age_hours: 24
+    evidence_profile: production
+    providers:
+      - id: supplier
+        kind: supplier
+        trust_profile: lcsc-cn
+        domains: [TODO]
+        component_part_field: supplier_part
+      - id: assembler
+        kind: assembler
+        trust_profile: jlcpcb-parts
+        domains: [TODO]
+    assembly:
+      enabled: true
+      provider_id: assembler
+      require_availability: true
+    cost_budget:
+      status: TODO
+      source_intake_revision: 0
+      currency: TODO
+      quantity_basis: 1
+      maximum_component_cost_per_board: 0
+      maximum_component_order_total: 0
+      maximum_order_total: 0
+      estimate_lines: []
+      allocation_rationale: TODO
+  roles:
+    - id: TODO_ROLE_ID
+      kind: TODO
+      purpose: TODO
+      required: true
+      component_refs: [TODO_REF]
+      block_ids: [TODO_BLOCK_ID]
+      constraint_ids: [TODO_CONSTRAINT_ID]
+      dependency_role_ids: []
+      architecture_refs: {}
+      criteria: []
+  requirements:
+    - id: TODO_REQUIREMENT_ID
+      required: true
+      component_refs: [TODO_REF]
+      quantity_per_board: 1
+      disposition: pcba
+      block_ids: [TODO_BLOCK_ID]
+      constraint_ids: [TODO_CONSTRAINT_ID]
+      role_ids: [TODO_ROLE_ID]
+  compatibility_constraints:
+    - id: TODO_COMPATIBILITY_ID
+      left_requirement_id: TODO_REQUIREMENT_ID
+      left_attribute: TODO_ATTRIBUTE
+      operator: eq
+      value: TODO
+      rationale: TODO
+      architecture_refs: {}
+  artifacts:
+    candidates: artifacts/sourcing/TODO_PROJECT/candidates.yaml
+    ranking: artifacts/sourcing/TODO_PROJECT/ranking.yaml
+    part_lock: artifacts/sourcing/TODO_PROJECT/part-lock.yaml

@@ -1,0 +1,29 @@
+benchmark:
+  expected_exit: 0
+  checks:
+    - beginner_intake_check.py
+
+project:
+  name: pass_beginner_mvp_intake
+  stage: local-mvp
+
+user_profile:
+  experience: beginner
+  input_style: use_case_only
+  use_case: "I want a learning prototype from a plain-language use case."
+
+assumption_profile:
+  level: conservative_beginner_mvp
+  production_claim_allowed: false
+  order_ready_allowed: false
+  professional_review_required: true
+  unresolved_professional_decisions:
+    - "Exact load current is unknown."
+
+todo:
+  - category: user_input
+    status: open
+    blocking: true
+    owner: user
+    next_action: "Confirm exact load model before production."
+    text: "Exact load current is unknown."

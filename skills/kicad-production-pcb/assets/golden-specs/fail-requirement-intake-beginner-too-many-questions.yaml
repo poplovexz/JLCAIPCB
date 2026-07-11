@@ -1,0 +1,115 @@
+benchmark:
+  checks:
+    - script: requirement_intake_gate.py
+      expected_exit: 1
+intake:
+  project_name: excessive_questions_board
+  user_intent: Build a low-risk board from a plain-language use case.
+  input_style: use_case_only
+  use_environment: Indoor prototype.
+  connected_devices: Unknown external devices.
+  power_source: Unknown.
+  size_or_mechanical: Unknown.
+  manufacturing_intent: Prototype first.
+  success_criteria: The described external devices respond.
+  system_boundary: The board provides control and interfaces.
+  failure_consequence: Prototype stops without a known safety hazard.
+  desired_end_target: local-mvp
+safety_screening:
+  level: standard
+  hazards: []
+  rationale: Low-risk indoor prototype.
+  blocks_automatic_assumptions: false
+evidence_inputs:
+  available: []
+  requested: []
+beginner:
+  input_style: use_case_only
+  question_strategy: practical_minimum
+  round: 1
+  max_rounds: 2
+  max_questions: 6
+  resolution_mode: ask_user
+  questions:
+    - id: q-function
+      category: function
+      question: Which job is closest to the intended use?
+      choices: [Control, Sense, Not sure]
+      recommended_choice: Control
+      allow_unknown: true
+      reason: Select the main function.
+      blocks: architecture
+    - id: q-interface
+      category: interfaces
+      question: How should external things connect?
+      choices: [Cable, Wireless, Not sure]
+      recommended_choice: Cable
+      allow_unknown: true
+      reason: Select the external interface style.
+      blocks: architecture
+    - id: q-power
+      category: power_source
+      question: How would you prefer to power it?
+      choices: [USB, Battery, Not sure]
+      recommended_choice: USB
+      allow_unknown: true
+      reason: Select the power architecture.
+      blocks: architecture
+    - id: q-quantity
+      category: quantity
+      question: How many things connect at once?
+      choices: [One, Several, Not sure]
+      recommended_choice: One
+      allow_unknown: true
+      reason: Select the connector count.
+      blocks: architecture
+    - id: q-mechanical
+      category: mechanical
+      question: Does it need to fit a case?
+      choices: ["Yes", "No", Not sure]
+      recommended_choice: "No"
+      allow_unknown: true
+      reason: Select the mechanical constraint level.
+      blocks: mvp
+    - id: q-manufacturing
+      category: manufacturing
+      question: Which first build style do you want?
+      choices: [Hand-built, Factory-built, Not sure]
+      recommended_choice: Hand-built
+      allow_unknown: true
+      reason: Select the first manufacturing path.
+      blocks: manufacturing
+  deferred_professional_topics:
+    - Final production ratings.
+missing_information:
+  must_ask_now:
+    - Ask only the highest-impact questions.
+  can_defer: []
+  blocks_mvp: []
+  blocks_production:
+    - Final production ratings.
+  blocks_order_ready:
+    - External manufacturing review evidence.
+safe_assumptions:
+  - id: safe-question-count-mvp
+    assumption: Keep the result at local MVP.
+    reason: The user supplied only a use case.
+    risk: It is not production-ready.
+    stage_allowed: local-mvp
+unsafe_assumptions:
+  - id: unsafe-question-count-production
+    unknown: Final production details.
+    why_not_guess: They affect manufacturing release.
+    required_before: production-package
+confirmation:
+  status: pending
+  confirmed_by: none
+  intake_revision: 1
+  confirmed_revision: 0
+  user_response_summary: Awaiting a reduced question set.
+decision:
+  current_target: requirements-only
+  can_create_spec: false
+  can_generate_kicad: false
+  can_run_erc_drc: false
+  next_action: Reduce the first round to at most five questions.

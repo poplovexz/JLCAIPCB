@@ -1,0 +1,17 @@
+blocking_erc_categories:
+  - lib_symbol_issues
+  - footprint_link_issues
+
+blocking_drc_categories:
+  - lib_footprint_issues
+  - shorting_items
+  - tracks_crossing
+  - clearance
+
+local_library_tables:
+  - sym-lib-table
+  - fp-lib-table
+
+minimum_project_files:
+  schematic: true
+  pcb: true

@@ -1,0 +1,64 @@
+# Merge this generic fragment into a complete spec after intake, architecture,
+# sourcing (when production), and library binding are complete.
+# The freeze transaction generates product-baseline.md and the spec_freeze index;
+# do not hand-author either frozen output.
+project:
+  name: REPLACE_PROJECT_NAME
+  stage: local-mvp
+  root_dir: ..
+  output_dir: projects/REPLACE_PROJECT_NAME
+  artifacts_dir: artifacts
+  kicad_major_required: REPLACE_KICAD_MAJOR
+
+schematic:
+  connectivity:
+    mode: net_labels
+    label_scope: global
+    default_label_shape: passive
+  no_connects: []
+  path_assertions: []
+
+board:
+  constraint_dispositions:
+    outline:
+      status: defined
+      rationale: REPLACE_WITH_REASON
+      references: [board.size_mm]
+    stackup:
+      status: defined
+      rationale: REPLACE_WITH_REASON
+      references: [board.layers, board.stackup]
+    fabrication:
+      status: defined
+      rationale: REPLACE_WITH_REASON
+      references: [board.fabrication, board.net_classes]
+    placement:
+      status: defined
+      rationale: REPLACE_WITH_REASON
+      references: [REPLACE_WITH_SPEC_PATH]
+    mechanical:
+      status: not_applicable
+      rationale: REPLACE_WITH_REASON_OR_DEFINE_REFERENCES
+    keepouts:
+      status: not_applicable
+      rationale: REPLACE_WITH_REASON_OR_DEFINE_REFERENCES
+    external_connectors:
+      status: defined
+      rationale: REPLACE_WITH_REASON
+      references: [architecture.external_connectors]
+    high_current:
+      status: not_applicable
+      rationale: REPLACE_WITH_REASON_OR_DEFINE_REFERENCES
+    controlled_impedance:
+      status: not_applicable
+      rationale: REPLACE_WITH_REASON_OR_DEFINE_REFERENCES
+
+manufacturing:
+  target: REPLACE_MANUFACTURING_TARGET
+  mode: bare-pcb
+  quantity: REPLACE_POSITIVE_QUANTITY
+  required_outputs: [gerber, drill]
+
+validation:
+  spec_freeze:
+    required: true

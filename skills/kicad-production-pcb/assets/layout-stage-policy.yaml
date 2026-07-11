@@ -1,0 +1,65 @@
+schema_version: 1
+layout_schema_versions: [1]
+manifest_schema_version: 1
+ready_states: [ready, frozen]
+required_layout_fields: [schema_version, state, revision, coordinate_system, constraints, placement_batches]
+required_coordinate_system_fields: [units, origin, x_axis, y_axis]
+coordinate_units: [mm]
+required_project_stages: [local-mvp, production-package, production, release, fabrication, order-ready, order-ready-blocked]
+component_sides: [top, bottom]
+constraint_statuses: [defined, not_applicable]
+required_constraint_areas:
+  - outline
+  - mechanical
+  - placement
+  - external_connectors
+  - keepouts
+  - critical_proximity
+  - high_current
+  - high_speed
+  - rf_antenna
+  - power_copper
+  - return_paths
+  - thermal
+  - assembly
+constraint_collections:
+  placement: layout.placement_batches
+  mechanical: board.mechanical_features
+  external_connectors: layout.external_connectors
+  keepouts: layout.keepouts
+  critical_proximity: layout.proximity_constraints
+  high_current: layout.high_current_paths
+  high_speed: layout.high_speed_paths
+  rf_antenna: layout.antenna_constraints
+  power_copper: layout.power_copper
+  return_paths: layout.return_paths
+  thermal: layout.thermal_paths
+  assembly: layout.assembly_constraints
+required_batch_fields: [id, order, refs, rationale]
+required_fixed_placement_fields: [ref, side, rotation_deg, tolerance_mm, rationale]
+required_keepout_fields: [id, polygon, layers, restrictions, rationale]
+keepout_restrictions: [tracks, vias, copper, footprints]
+required_zone_fields: [id, net, layer, polygon, purpose]
+required_mechanical_fields: [id, ref, kind, clearance_mm, rationale]
+required_proximity_fields: [id, max_distance_mm, rationale]
+required_separation_fields: [id, refs, min_distance_mm, rationale]
+required_external_connector_fields: [id, ref, board_edge, max_edge_distance_mm, footprint_outward_axis_deg, outward_direction_deg, orientation_tolerance_deg, allow_body_overhang]
+required_path_fields: [id, rationale]
+always_defined_areas: [outline, placement]
+collection_required_fields:
+  high_current_paths: [id, nets, source_refs, sink_refs, current_a, corridor_polygon, min_corridor_width_mm, copper_layers, zone_ids, rationale]
+  high_speed_paths: [id, nets, topology, endpoint_refs, routing_layers, reference_net, max_length_mm, max_vias, rationale]
+  antenna_constraints: [id, ref, keepout_id, required_layers, rationale]
+  power_copper: [id, nets, zone_ids, rationale]
+  return_paths: [id, signal_nets, reference_net, zone_ids, rationale]
+  thermal_paths: [id, refs, strategy, layout_objects, rationale]
+  assembly_constraints: [id, refs, rationale]
+default_evidence_subdir: layout-stage
+default_evidence_filename: layout-stage.yaml
+position_tolerance_mm: 0.001
+rotation_tolerance_deg: 0.001
+outline_tolerance_mm: 0.001
+overlap_tolerance_mm: 0.001
+executor_dependencies:
+  - scripts/_pcb_skill_checks.py
+  - scripts/_package_binding_stage.py

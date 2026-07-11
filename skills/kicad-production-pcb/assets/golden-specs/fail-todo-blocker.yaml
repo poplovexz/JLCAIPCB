@@ -1,0 +1,14 @@
+benchmark:
+  expected_exit: 0
+  checks:
+    - script: todo_blocker_check.py
+      args: ["--production"]
+      expected_exit: 1
+
+project:
+  name: fail_todo_blocker
+  output_dir: projects/fail_todo_blocker
+  artifacts_dir: artifacts
+
+todo:
+  - "TODO confirm connector current rating before production"

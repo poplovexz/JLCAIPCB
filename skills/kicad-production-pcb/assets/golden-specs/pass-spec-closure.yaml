@@ -1,0 +1,54 @@
+benchmark:
+  expected_exit: 0
+  checks:
+    - spec_closure_check.py
+
+project:
+  name: pass_spec_closure
+  stage: production-package
+  output_dir: projects/pass_spec_closure
+  artifacts_dir: artifacts
+
+validation:
+  spec_closure:
+    required: true
+
+requirements:
+  function: {status: confirmed, summary: "Function is closed for this golden case."}
+  power: {status: confirmed, summary: "Power input and load budget are closed."}
+  key_parts: {status: confirmed, summary: "Key parts are selected."}
+  interfaces: {status: confirmed, summary: "Interfaces and pinouts are closed."}
+  mechanical: {status: confirmed, summary: "Mechanical constraints are closed."}
+  manufacturing: {status: confirmed, summary: "Manufacturing target is closed."}
+  risk_review: {status: confirmed, summary: "Known risks are reviewed."}
+
+nets:
+  - {name: VIN, class: power}
+  - {name: GND, class: power}
+
+power_domains:
+  - name: VIN
+    nets: [VIN, GND]
+    voltage: {nominal_v: 5.0}
+    source: {name: J1, current_limit_a: 1.0, net: VIN}
+    loads:
+      - {name: LOAD, net: VIN, current_a: 0.1, quantity: 1}
+    conductors:
+      - {name: INPUT_PIN, current_rating_a: 1.0}
+
+verification:
+  signal_integrity:
+    status: not_applicable
+  power_integrity:
+    rails:
+      - name: VIN
+        nominal_v: 5.0
+        max_load_a: 0.1
+        nets: [VIN]
+        power_domain: VIN
+  thermal:
+    status: not_applicable
+  emc:
+    status: not_applicable
+
+todo: []

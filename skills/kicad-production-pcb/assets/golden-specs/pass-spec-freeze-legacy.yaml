@@ -1,0 +1,10 @@
+benchmark:
+  expected_exit: 0
+  checks:
+    - script: spec_freeze_check.py
+      args: [--before-generation]
+
+project:
+  name: pass_spec_freeze_legacy
+  output_dir: projects/pass_spec_freeze_legacy
+  artifacts_dir: artifacts

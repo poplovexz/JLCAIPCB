@@ -1,0 +1,8 @@
+benchmark:
+  checks:
+    - script: architecture_gate.py
+      args: [--before-generation]
+      expected_exit: 1
+project:
+  name: production_without_architecture
+  stage: production-package

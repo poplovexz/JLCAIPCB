@@ -1,0 +1,125 @@
+schema_version: 1
+manifest_schema_version: 1
+
+executor_dependencies:
+  - scripts/_pcb_skill_checks.py
+  - scripts/_kicad_sexpr.py
+  - scripts/_part_lock.py
+  - scripts/_spec_freeze.py
+
+required_stage_values:
+  - local-mvp
+  - local_mvp
+  - fabrication
+  - production
+  - production-package
+  - production_package
+  - release
+  - order-ready
+  - order_ready
+  - order-ready-blocked
+  - order_ready_blocked
+
+production_stage_values:
+  - fabrication
+  - production
+  - production-package
+  - production_package
+  - release
+  - order-ready
+  - order_ready
+  - order-ready-blocked
+  - order_ready_blocked
+
+production_signals:
+  - manufacturing.production_ready
+  - manufacturing.order_ready
+  - manufacturing.jlcpcb.release
+  - validation.production.required
+
+force_required_field: validation.schematic_stage.required
+
+paths:
+  project_root_field: project.root_dir
+  output_dir_field: project.output_dir
+  artifacts_dir_field: project.artifacts_dir
+  manifest_directory: checks
+  manifest_filename: schematic-stage-manifest.yaml
+  erc_report_filename: erc.rpt
+  generated_netlist_filename: generated_netlist.xml
+  generated_net_graph_filename: generated_net_graph.json
+  review_pdf_filename: schematic-review.pdf
+
+connectivity:
+  section_path: schematic.connectivity
+  mode_field: mode
+  allowed_modes: [wires, net_labels]
+  require_explicit_mode_when_required: true
+  label_scope_field: label_scope
+  allowed_label_scopes: [global, local]
+  required_label_scope: global
+  default_label_shape_field: default_label_shape
+  required_default_label_shape: passive
+  net_label_shape_field: schematic_label_shape
+  allowed_label_shapes: [passive, input, output, bidirectional, tri_state]
+  require_exact_generated_net_names: true
+
+pin_contract:
+  no_connects_path: schematic.no_connects
+  no_connect_ref_field: ref
+  no_connect_pins_field: pins
+  require_complete_coverage_when_required: true
+  supported_symbol_unit_count: 1
+  fail_on_unknown_declared_pin: true
+  fail_on_connected_and_no_connect_overlap: true
+
+net_roles:
+  power_classes: [power]
+  power_class_patterns: ['^power(?:$|[-_].*)']
+  allowed_roles: [supply, return, signal, passive]
+  supply_role: supply
+  return_role: return
+  source_fields: [source_pins, source]
+  sink_field: sink_pins
+  return_field: return_pins
+  require_for_power_classes_when_required: true
+
+power_flags:
+  path: schematic.power_flags
+  ref_field: ref
+  net_field: net
+  required_fields: [symbol, position_mm]
+  source_pins_field: source_pins
+  rationale_field: rationale
+  require_source_binding_when_required: true
+
+path_assertions:
+  path: schematic.path_assertions
+  allowed_kinds: [series, shunt]
+  coverage_field: covers
+  boundary_field: boundaries
+  required_protection_disposition: required
+  require_protection_coverage_for_production: true
+  series:
+    source_pin_field: source_pin
+    sink_pin_field: sink_pin
+    through_field: through
+    ref_field: ref
+    input_pin_field: input_pin
+    output_pin_field: output_pin
+  shunt:
+    ref_field: ref
+    line_pin_field: line_pin
+    return_pin_field: return_pin
+    line_net_field: line_net
+    return_net_field: return_net
+
+pin_type_overrides:
+  override_path: kicad.symbol_pin_types
+  evidence_path: kicad.symbol_pin_type_override_evidence
+  required_evidence_fields: [source, sha256, rationale]
+  source_field: source
+  sha256_field: sha256
+  evidence_must_be_local_file: true
+  evidence_must_be_under_artifacts: true
+  require_evidence_for_production: true

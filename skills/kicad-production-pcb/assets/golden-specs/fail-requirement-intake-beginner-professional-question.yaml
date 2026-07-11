@@ -1,0 +1,78 @@
+benchmark:
+  checks:
+    - script: requirement_intake_gate.py
+      expected_exit: 1
+intake:
+  project_name: premature_professional_question_board
+  user_intent: Build a board from a plain-language use case.
+  input_style: use_case_only
+  use_environment: Indoor prototype.
+  connected_devices: Unknown external device.
+  power_source: Unknown.
+  size_or_mechanical: Unknown.
+  manufacturing_intent: Prototype first.
+  success_criteria: The external device responds.
+  system_boundary: The board controls an external device.
+  failure_consequence: Prototype stops without a known safety hazard.
+  desired_end_target: local-mvp
+safety_screening:
+  level: standard
+  hazards: []
+  rationale: Low-risk indoor prototype.
+  blocks_automatic_assumptions: false
+evidence_inputs:
+  available: []
+  requested:
+    - type: device_photo
+      reason: Identify the device without asking for a part number.
+      required_before: draft-spec
+beginner:
+  input_style: use_case_only
+  question_strategy: practical_minimum
+  round: 1
+  max_rounds: 2
+  max_questions: 5
+  resolution_mode: ask_user
+  questions:
+    - id: q-professional-detail
+      category: interfaces
+      question: What trace width and TVS diode should be used?
+      choices: [Small values, Large values, Not sure]
+      recommended_choice: Small values
+      allow_unknown: true
+      reason: This asks a professional implementation detail too early.
+      blocks: architecture
+  deferred_professional_topics: []
+missing_information:
+  must_ask_now:
+    - Confirm the practical function and power source.
+  can_defer:
+    - Professional implementation details.
+  blocks_mvp: []
+  blocks_production:
+    - Final electrical ratings.
+  blocks_order_ready:
+    - External manufacturing review evidence.
+safe_assumptions:
+  - id: safe-professional-question-mvp
+    assumption: Keep the result at local MVP.
+    reason: The user supplied only a use case.
+    risk: It is not production-ready.
+    stage_allowed: local-mvp
+unsafe_assumptions:
+  - id: unsafe-professional-details
+    unknown: Final implementation details.
+    why_not_guess: They affect safety and manufacturing.
+    required_before: production-package
+confirmation:
+  status: pending
+  confirmed_by: none
+  intake_revision: 1
+  confirmed_revision: 0
+  user_response_summary: Awaiting practical answers and confirmation.
+decision:
+  current_target: requirements-only
+  can_create_spec: false
+  can_generate_kicad: false
+  can_run_erc_drc: false
+  next_action: Replace the professional question with practical choices.

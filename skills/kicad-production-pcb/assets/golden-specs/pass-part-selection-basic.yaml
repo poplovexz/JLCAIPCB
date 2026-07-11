@@ -1,0 +1,642 @@
+benchmark:
+  expected_exit: 0
+  working_directory: skill-root
+  checks:
+  - script: architecture_report.py
+  - script: sourcing_context_check.py
+    args:
+    - --require
+  - script: candidate_batch_check.py
+    args:
+    - --require
+    - --as-of
+    - '2026-07-10T12:00:00Z'
+  - script: candidate_rank_check.py
+    args:
+    - --require
+    - --check-only
+    - --as-of
+    - '2026-07-10T12:00:00Z'
+  - script: part_lock_check.py
+    args:
+    - --require
+    - --as-of
+    - '2026-07-10T12:00:00Z'
+  - script: part_selection_check.py
+    args:
+    - --require
+    - --as-of
+    - '2026-07-10T12:00:00Z'
+  - script: part_selection_check.py
+    expected_exit: 1
+    args:
+    - --require
+    - --before-generation
+    - --as-of
+    - '2026-07-10T12:00:00Z'
+  - script: tests/test_part_selection_architecture_trace.py
+  - script: tests/test_sourcing_stage.py
+  - script: tests/test_sourcing_adversarial.py
+project:
+  name: pass_part_selection_basic
+  stage: production-package
+  root_dir: ../..
+  artifacts_dir: assets/golden-sourcing/pass_part_selection_basic
+validation:
+  architecture:
+    required: true
+  part_selection:
+    allow_test_clock: true
+requirement_intake:
+  intake:
+    user_intent: Implement a generic controller with an exposed external interface.
+    success_criteria: The external device receives the requested control behavior.
+    system_boundary: The controller and connectors are on the board; the controlled device remains external.
+  budget_intent:
+    status: rough-range
+    scope: prototype-batch
+    currency: CNY
+    target_amount: 200
+    maximum_amount: 250
+    quantity_basis: 10
+    includes:
+    - components
+    - pcb-fabrication
+    - assembly
+    priority: balanced
+    user_statement: Keep the ten-board sourcing fixture below 250 CNY.
+    allow_mvp_without_limit: false
+  safety_screening:
+    hazards: []
+  confirmation:
+    status: confirmed
+    confirmed_by: user
+    confirmed_revision: 1
+  decision:
+    current_target: production-package
+architecture:
+  revision: 1
+  source_intake_revision: 1
+  current_target: production-package
+  state: ready
+  summary: A protected power entry feeds a controller and a connector-facing external interface.
+  practical_choices_confirmed: true
+  practical_choice_confirmation:
+    status: confirmed
+    confirmed_by: user
+    architecture_revision: 1
+    source_intake_revision: 1
+    architecture_sha256: 599fb397fc1adbe819c614ef6314ad0745384e114d7f63132223e254cfe7a2c8
+    user_response_summary: Confirmed the power entry, exposed connector, and external device boundary.
+  technical_decision_owner: codex
+  outputs:
+    report_path: assets/golden-sourcing/pass_part_selection_basic/architecture.md
+  blocks:
+  - id: POWER_IN
+    category: power_entry
+    role: Receive and protect board power.
+    scope: onboard
+    power_domains:
+    - LOGIC_POWER
+    required: true
+    selection_constraints:
+    - id: POWER_INPUT_CAPABILITY
+      kind: power
+      statement: Provide the logic power domain and declared boundary protection.
+      required: true
+      required_before: component-sourcing
+      criteria:
+      - attribute: functions
+        operator: contains
+        value: protected_power_entry
+  - id: CONTROL_CORE
+    category: controller
+    role: Implement the requested control behavior.
+    scope: onboard
+    power_domains:
+    - LOGIC_POWER
+    required: true
+    selection_constraints:
+    - id: CONTROL_FUNCTION_CAPABILITY
+      kind: function
+      statement: Implement the control and recovery behavior.
+      required: true
+      required_before: component-sourcing
+      criteria:
+      - attribute: functions
+        operator: contains
+        value: programmable_control
+  - id: EXTERNAL_IO
+    category: interface
+    role: Expose the external control interface.
+    scope: onboard
+    power_domains:
+    - LOGIC_POWER
+    required: true
+    selection_constraints:
+    - id: EXTERNAL_INTERFACE_CAPABILITY
+      kind: interface
+      statement: Provide the exposed interface and boundary protection.
+      required: true
+      required_before: component-sourcing
+      criteria:
+      - attribute: functions
+        operator: contains
+        value: protected_external_interface
+  - id: EXTERNAL_DEVICE
+    category: external_device
+    role: Represent the off-board controlled device.
+    scope: external
+    power_domains: []
+    required: true
+  block_edges:
+  - id: EDGE_POWER_CONTROL
+    from: POWER_IN
+    to: CONTROL_CORE
+    kind: power
+    direction: source_to_sink
+  - id: EDGE_POWER_IO
+    from: POWER_IN
+    to: EXTERNAL_IO
+    kind: power
+    direction: source_to_sink
+  - id: EDGE_CONTROL_IO
+    from: CONTROL_CORE
+    to: EXTERNAL_IO
+    kind: data
+    direction: bidirectional
+  - id: EDGE_IO_EXTERNAL
+    from: EXTERNAL_IO
+    to: EXTERNAL_DEVICE
+    kind: data
+    direction: bidirectional
+  power_domains:
+  - id: LOGIC_POWER
+    source_block: POWER_IN
+    consumer_blocks:
+    - CONTROL_CORE
+    - EXTERNAL_IO
+    voltage_class: regulated_low_voltage
+    current_class: low
+    sharing: dedicated
+    backfeed_policy: blocked
+    protection_intent: required
+    required_before: component-sourcing
+  interfaces:
+  - id: EXTERNAL_LINK
+    from: EXTERNAL_IO
+    to: EXTERNAL_DEVICE
+    kind: data
+    direction: bidirectional
+    external: true
+    speed_class: low
+    voltage_domain: LOGIC_POWER
+    risk_tags:
+    - external_cable
+    - user_accessible
+    required_before: component-sourcing
+  external_connectors:
+  - id: CONNECTOR_EXTERNAL
+    block_id: EXTERNAL_IO
+    interface_ids:
+    - EXTERNAL_LINK
+    exposure: user_accessible
+    hot_plug: 'no'
+    protection_intent: required
+    rationale: The interface leaves the board and is user accessible.
+    required_before: component-sourcing
+  risk_paths:
+  - id: RISK_EXTERNAL_CABLE
+    kind: external_cable
+    block_ids:
+    - EXTERNAL_IO
+    - EXTERNAL_DEVICE
+    interface_ids:
+    - EXTERNAL_LINK
+    power_domain_ids: []
+    connector_ids:
+    - CONNECTOR_EXTERNAL
+    reason: The signal crosses the board boundary.
+    constraints:
+    - Keep boundary protection close to the connector.
+    required_before: component-sourcing
+  protection_intents:
+  - id: PROTECT_POWER
+    boundary_id: LOGIC_POWER
+    threats:
+    - overcurrent
+    - reverse_polarity
+    disposition: required
+    strategy_classes:
+    - current_limit
+    - polarity_control
+    rationale: Protect the power entry.
+    required_before: component-sourcing
+  - id: PROTECT_EXTERNAL
+    boundary_id: CONNECTOR_EXTERNAL
+    threats:
+    - electrostatic_discharge
+    disposition: required
+    strategy_classes:
+    - clamp
+    rationale: Protect the exposed interface.
+    required_before: component-sourcing
+  failure_states:
+  - id: FAIL_EXTERNAL_DISCONNECT
+    trigger: External device disconnects.
+    affected_blocks:
+    - EXTERNAL_IO
+    - CONTROL_CORE
+    safe_state: Keep outputs inactive.
+    required_before: component-sourcing
+  test_and_debug:
+  - id: TEST_CONTROL
+    kind: programming
+    target_blocks:
+    - CONTROL_CORE
+    disposition: required
+    rationale: The controller requires a recovery path.
+    required_before: component-sourcing
+  requirement_coverage:
+  - requirement_path: intake.user_intent
+    block_ids:
+    - CONTROL_CORE
+    - EXTERNAL_IO
+    rationale: These blocks implement the requested behavior.
+  - requirement_path: intake.success_criteria
+    block_ids:
+    - CONTROL_CORE
+    - EXTERNAL_DEVICE
+    rationale: These blocks produce the observable result.
+  - requirement_path: intake.system_boundary
+    block_ids:
+    - EXTERNAL_IO
+    - EXTERNAL_DEVICE
+    rationale: These blocks define the board boundary.
+  - requirement_path: budget_intent
+    block_ids:
+    - POWER_IN
+    - CONTROL_CORE
+    - EXTERNAL_IO
+    rationale: These blocks and their selected parts must fit the confirmed order budget.
+  hazard_coverage: []
+  open_decisions: []
+sourcing:
+  schema_version: 1
+  context:
+    region: CN
+    currency: CNY
+    board_quantity: 10
+    attrition_rate: 0.1
+    max_candidates_per_requirement: 3
+    max_search_rounds: 2
+    stock_max_age_hours: 72
+    lock_max_age_hours: 72
+    evidence_profile: benchmark-fixture
+    providers:
+    - id: primary_supplier
+      kind: supplier
+      trust_profile: lcsc-cn
+      domains:
+      - lcsc.com
+      component_part_field: lcsc_part
+    - id: primary_assembler
+      kind: assembler
+      trust_profile: jlcpcb-parts
+      domains:
+      - jlcpcb.com
+    assembly:
+      enabled: true
+      provider_id: primary_assembler
+      require_availability: true
+    cost_budget:
+      status: constrained
+      source_intake_revision: 1
+      currency: CNY
+      quantity_basis: 10
+      maximum_component_cost_per_board: 15
+      maximum_component_order_total: 150
+      maximum_order_total: 250
+      estimate_lines:
+      - id: PCB_ALLOWANCE
+        category: pcb-fabrication
+        amount: 50
+        basis: batch
+        source: Conservative current estimate before the fabrication quote.
+        confidence: conservative-allowance
+      - id: ASSEMBLY_ALLOWANCE
+        category: assembly
+        amount: 30
+        basis: batch
+        source: Conservative current estimate before the assembly quote.
+        confidence: conservative-allowance
+      allocation_rationale: Reserve the remainder of the confirmed order budget for parts, PCB fabrication, and assembly.
+  roles:
+  - id: ROLE_CONTROL
+    kind: controller
+    purpose: Execute the requested control behavior.
+    required: true
+    component_refs:
+    - U1
+    block_ids:
+    - CONTROL_CORE
+    constraint_ids:
+    - CONTROL_FUNCTION_CAPABILITY
+    dependency_role_ids:
+    - ROLE_POWER_ENTRY
+    architecture_refs: {}
+    criteria: []
+  - id: ROLE_RECOVERY
+    kind: programming-debug
+    purpose: Preserve a programming and recovery path.
+    required: true
+    component_refs:
+    - U1
+    block_ids:
+    - CONTROL_CORE
+    constraint_ids:
+    - CONTROL_FUNCTION_CAPABILITY
+    dependency_role_ids:
+    - ROLE_CONTROL
+    architecture_refs:
+      test_debug_ids:
+      - TEST_CONTROL
+    criteria: []
+  - id: ROLE_EXTERNAL_CONNECTOR
+    kind: connector
+    purpose: Own the board-side external interface boundary.
+    required: true
+    component_refs:
+    - J1
+    block_ids:
+    - EXTERNAL_IO
+    constraint_ids:
+    - EXTERNAL_INTERFACE_CAPABILITY
+    dependency_role_ids:
+    - ROLE_CONTROL
+    architecture_refs:
+      external_connector_ids:
+      - CONNECTOR_EXTERNAL
+    criteria: []
+  - id: ROLE_EXTERNAL_PROTECTION
+    kind: protection
+    purpose: Implement the required external-boundary protection strategy.
+    required: true
+    component_refs:
+    - J1
+    block_ids:
+    - EXTERNAL_IO
+    constraint_ids:
+    - EXTERNAL_INTERFACE_CAPABILITY
+    dependency_role_ids:
+    - ROLE_EXTERNAL_CONNECTOR
+    architecture_refs:
+      protection_intent_ids:
+      - PROTECT_EXTERNAL
+    criteria:
+    - attribute: protection_strategies
+      operator: contains
+      value: clamp
+  - id: ROLE_POWER_ENTRY
+    kind: power-entry
+    purpose: Receive and distribute the declared board power domain.
+    required: true
+    component_refs:
+    - J2
+    block_ids:
+    - POWER_IN
+    constraint_ids:
+    - POWER_INPUT_CAPABILITY
+    dependency_role_ids: []
+    architecture_refs:
+      power_domain_ids:
+      - LOGIC_POWER
+    criteria: []
+  - id: ROLE_POWER_PROTECTION
+    kind: protection
+    purpose: Implement every required power-entry protection strategy.
+    required: true
+    component_refs:
+    - J2
+    block_ids:
+    - POWER_IN
+    constraint_ids:
+    - POWER_INPUT_CAPABILITY
+    dependency_role_ids:
+    - ROLE_POWER_ENTRY
+    architecture_refs:
+      protection_intent_ids:
+      - PROTECT_POWER
+    criteria:
+    - attribute: protection_strategies
+      operator: contains_all
+      value:
+      - current_limit
+      - polarity_control
+  requirements:
+  - id: CONTROL_PRIMARY
+    required: true
+    component_refs:
+    - U1
+    quantity_per_board: 1
+    disposition: pcba
+    block_ids:
+    - CONTROL_CORE
+    constraint_ids:
+    - CONTROL_FUNCTION_CAPABILITY
+    role_ids:
+    - ROLE_CONTROL
+    - ROLE_RECOVERY
+  - id: EXTERNAL_CONNECTOR
+    required: true
+    component_refs:
+    - J1
+    quantity_per_board: 1
+    disposition: pcba
+    block_ids:
+    - EXTERNAL_IO
+    constraint_ids:
+    - EXTERNAL_INTERFACE_CAPABILITY
+    role_ids:
+    - ROLE_EXTERNAL_CONNECTOR
+    - ROLE_EXTERNAL_PROTECTION
+  - id: POWER_CONNECTOR
+    required: true
+    component_refs:
+    - J2
+    quantity_per_board: 1
+    disposition: pcba
+    block_ids:
+    - POWER_IN
+    constraint_ids:
+    - POWER_INPUT_CAPABILITY
+    role_ids:
+    - ROLE_POWER_ENTRY
+    - ROLE_POWER_PROTECTION
+  compatibility_constraints:
+  - id: COMPAT_POWER_CONTROL
+    left_requirement_id: POWER_CONNECTOR
+    left_attribute: output_voltage
+    operator: eq
+    right_requirement_id: CONTROL_PRIMARY
+    right_attribute: logic_voltage
+    rationale: The selected power source and controller voltage must agree.
+    architecture_refs:
+      block_edge_ids:
+      - EDGE_POWER_CONTROL
+      power_domain_ids:
+      - LOGIC_POWER
+  - id: COMPAT_POWER_INTERFACE
+    left_requirement_id: POWER_CONNECTOR
+    left_attribute: output_voltage
+    operator: eq
+    right_requirement_id: EXTERNAL_CONNECTOR
+    right_attribute: signal_voltage
+    rationale: The interface voltage must agree with the selected power domain.
+    architecture_refs:
+      block_edge_ids:
+      - EDGE_POWER_IO
+  - id: COMPAT_CONTROL_INTERFACE
+    left_requirement_id: CONTROL_PRIMARY
+    left_attribute: interface_family
+    operator: eq
+    right_requirement_id: EXTERNAL_CONNECTOR
+    right_attribute: interface_family
+    rationale: The selected controller and boundary interface must use the same interface family.
+    architecture_refs:
+      block_edge_ids:
+      - EDGE_CONTROL_IO
+  - id: COMPAT_EXTERNAL_BOUNDARY
+    left_requirement_id: EXTERNAL_CONNECTOR
+    left_attribute: interface_family
+    operator: contains
+    value: generic-control
+    rationale: The external boundary must expose the architecture-selected interface family.
+    architecture_refs:
+      block_edge_ids:
+      - EDGE_IO_EXTERNAL
+      interface_ids:
+      - EXTERNAL_LINK
+  artifacts:
+    candidates: assets/golden-sourcing/pass_part_selection_basic/candidates.yaml
+    ranking: assets/golden-sourcing/pass_part_selection_basic/ranking.yaml
+    part_lock: assets/golden-sourcing/pass_part_selection_basic/part-lock.yaml
+  part_lock:
+    status: locked
+    path: assets/golden-sourcing/pass_part_selection_basic/part-lock.yaml
+    sha256: a0f1c7aaaf454a08c00e1934895817e27594192afeb8a583078d498759a4a18f
+    architecture_sha256: e6f86a6813a44b0c3be5ceeecc5e4708878dcb869df75130fb10885730251d90
+    sourcing_context_sha256: 71214e8befae0009d3649a33ba4a310dbb8c45ae9395bb5bdf1a8343df1f6ac4
+    candidate_manifest_sha256: 68d15a7af2763e0797e7e30435c8a3ddc4b8668f8dbda81b01edc0134612d39f
+    locked_at: '2026-07-10T12:00:00Z'
+    selections:
+    - requirement_id: CONTROL_PRIMARY
+      candidate_id: CONTROL_CANDIDATE_A
+    - requirement_id: EXTERNAL_CONNECTOR
+      candidate_id: EXTERNAL_CANDIDATE_A
+    - requirement_id: POWER_CONNECTOR
+      candidate_id: POWER_CANDIDATE_A
+  downstream_binding:
+    status: pending
+    part_lock_sha256: a0f1c7aaaf454a08c00e1934895817e27594192afeb8a583078d498759a4a18f
+manufacturing:
+  target: jlcpcb
+  jlcpcb:
+    assembly:
+      enabled: true
+components:
+- ref: U1
+  value: Controller
+  manufacturer: Reference Logic Co
+  mpn: RLX32-A1
+  source_url: https://www.lcsc.com/product-detail/C910001.html
+  datasheet: https://docs.reference-logic.test/RLX32-A1.pdf
+  footprint: Package_QFN:QFN-32-1EP_5x5mm_P0.5mm_EP3.1x3.1mm
+  package: QFN-32
+  architecture_trace:
+    block_ids:
+    - CONTROL_CORE
+    constraint_ids:
+    - CONTROL_FUNCTION_CAPABILITY
+  sourcing_lock:
+    requirement_id: CONTROL_PRIMARY
+    candidate_id: CONTROL_CANDIDATE_A
+    candidate_manifest_sha256: 68d15a7af2763e0797e7e30435c8a3ddc4b8668f8dbda81b01edc0134612d39f
+  assembly:
+    footprint_package_token: QFN-32
+    provider_id: primary_assembler
+    assembly_available: true
+    library_class: basic
+    source_url: https://www.lcsc.com/product-detail/C910001.html
+    manufacturer: Reference Logic Co
+    mpn: RLX32-A1
+    lcsc_packaging: QFN-32
+    lcsc_part: C910001
+  lcsc_part: C910001
+  footprint_candidate: Package_QFN:QFN-32-1EP_5x5mm_P0.5mm_EP3.1x3.1mm
+- ref: J1
+  value: External interface connector
+  manufacturer: Reference Interconnect Co
+  mpn: RI04-A1
+  source_url: https://www.lcsc.com/product-detail/C910002.html
+  datasheet: https://docs.reference-interconnect.test/RI04-A1.pdf
+  footprint: Connector_Generic:Conn_01x04
+  package: CONN-04
+  architecture_trace:
+    block_ids:
+    - EXTERNAL_IO
+    constraint_ids:
+    - EXTERNAL_INTERFACE_CAPABILITY
+  sourcing_lock:
+    requirement_id: EXTERNAL_CONNECTOR
+    candidate_id: EXTERNAL_CANDIDATE_A
+    candidate_manifest_sha256: 68d15a7af2763e0797e7e30435c8a3ddc4b8668f8dbda81b01edc0134612d39f
+  assembly:
+    footprint_package_token: CONN-04
+    provider_id: primary_assembler
+    assembly_available: true
+    library_class: basic
+    source_url: https://www.lcsc.com/product-detail/C910002.html
+    manufacturer: Reference Interconnect Co
+    mpn: RI04-A1
+    lcsc_packaging: CONN-04
+    lcsc_part: C910002
+  lcsc_part: C910002
+  footprint_candidate: Connector_Generic:Conn_01x04
+- ref: J2
+  value: Power input connector
+  manufacturer: Reference Interconnect Co
+  mpn: RI02-P1
+  source_url: https://www.lcsc.com/product-detail/C910003.html
+  datasheet: https://docs.reference-interconnect.test/RI02-P1.pdf
+  footprint: Connector_Generic:Conn_01x02
+  package: CONN-02
+  architecture_trace:
+    block_ids:
+    - POWER_IN
+    constraint_ids:
+    - POWER_INPUT_CAPABILITY
+  sourcing_lock:
+    requirement_id: POWER_CONNECTOR
+    candidate_id: POWER_CANDIDATE_A
+    candidate_manifest_sha256: 68d15a7af2763e0797e7e30435c8a3ddc4b8668f8dbda81b01edc0134612d39f
+  assembly:
+    footprint_package_token: CONN-02
+    provider_id: primary_assembler
+    assembly_available: true
+    library_class: basic
+    source_url: https://www.lcsc.com/product-detail/C910003.html
+    manufacturer: Reference Interconnect Co
+    mpn: RI02-P1
+    lcsc_packaging: CONN-02
+    lcsc_part: C910003
+  lcsc_part: C910003
+  footprint_candidate: Connector_Generic:Conn_01x02
+- ref: C1
+  value: DNP tuning capacitor
+  footprint: Capacitor_SMD:C_0603_1608Metric
+  assembly:
+    dnp: true
+- ref: H1
+  value: Mounting hole
+  footprint: MountingHole:MountingHole_3.2mm_M3

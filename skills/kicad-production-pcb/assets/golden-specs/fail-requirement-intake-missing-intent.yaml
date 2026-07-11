@@ -1,0 +1,56 @@
+benchmark:
+  checks:
+    - script: requirement_intake_gate.py
+      expected_exit: 1
+intake:
+  project_name: missing_intent_board
+  user_intent: ""
+  input_style: guided
+  use_environment: Indoor.
+  connected_devices: Unknown.
+  power_source: Unknown.
+  size_or_mechanical: Unknown.
+  manufacturing_intent: Prototype.
+  success_criteria: Unknown until intent is supplied.
+  system_boundary: Unknown until intent is supplied.
+  failure_consequence: Unknown.
+  desired_end_target: requirements-only
+safety_screening:
+  level: unknown
+  hazards: []
+  rationale: The use case is missing.
+  blocks_automatic_assumptions: true
+evidence_inputs:
+  available: []
+  requested: []
+missing_information:
+  must_ask_now:
+    - Describe what the board should do.
+  can_defer: []
+  blocks_mvp:
+    - User intent.
+  blocks_production: []
+  blocks_order_ready: []
+safe_assumptions:
+  - id: safe-stay-requirements
+    assumption: Stay in requirements-only state.
+    reason: The project intent is missing.
+    risk: No design work can start.
+    stage_allowed: requirements-only
+unsafe_assumptions:
+  - id: unsafe-invent-intent
+    unknown: The real-world function.
+    why_not_guess: Guessing it would define the wrong project.
+    required_before: draft-spec
+confirmation:
+  status: pending
+  confirmed_by: none
+  intake_revision: 1
+  confirmed_revision: 0
+  user_response_summary: Awaiting a use-case description.
+decision:
+  current_target: requirements-only
+  can_create_spec: false
+  can_generate_kicad: false
+  can_run_erc_drc: false
+  next_action: Ask for the intended use.

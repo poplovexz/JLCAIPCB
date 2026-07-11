@@ -1,0 +1,8 @@
+proposal:
+  id: forbidden-existing-component-update
+  description: This must fail because proposals may not mutate existing components.
+
+update:
+  components:
+    - ref: R1
+      value: 10k

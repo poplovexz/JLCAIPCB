@@ -1,0 +1,14 @@
+benchmark:
+  expected_exit: 0
+  checks:
+    - script: readiness_preflight.py
+      args: ["--production"]
+      expected_exit: 1
+
+project:
+  name: fail_readiness_production_missing
+  output_dir: projects/fail_readiness_production_missing
+  artifacts_dir: artifacts
+
+manufacturing:
+  production_ready: true

@@ -1,0 +1,51 @@
+benchmark:
+  expected_exit: 0
+  checks:
+    - script: readiness_preflight.py
+      args: ["--production"]
+    - script: requirements_gate.py
+      args: ["--strict"]
+    - script: power_budget_check.py
+      args: ["--strict"]
+    - script: todo_blocker_check.py
+      args: ["--production"]
+
+project:
+  name: pass_production_readiness
+  title: Production Readiness Golden Spec
+  output_dir: projects/pass_production_readiness
+  artifacts_dir: artifacts
+  kicad_major_required: 10
+
+validation:
+  requirements:
+    required: true
+  power_budget:
+    required: true
+    default_margin_percent: 25
+    require_protection: true
+  todo_blockers:
+    required: true
+
+requirements:
+  function: {status: confirmed, summary: "Drive one declared low-current load."}
+  power: {status: confirmed, summary: "5V input with adequate current margin."}
+  key_parts: {status: confirmed, summary: "All key parts are selected for this golden case."}
+  interfaces: {status: confirmed, summary: "One input connector and one load output."}
+  mechanical: {status: confirmed, summary: "Board size and mounting are not constrained for this golden case."}
+  manufacturing: {status: confirmed, summary: "Prototype PCB only."}
+  risk_review: {status: confirmed, summary: "No open production-impacting risks."}
+
+power_domains:
+  - name: VIN
+    voltage: {nominal_v: 5.0, min_v: 4.75, max_v: 5.25}
+    source: {name: J1, current_limit_a: 1.0}
+    loads:
+      - {name: LED_LOAD, current_a: 0.02, quantity: 1}
+    required_margin_percent: 25
+    conductors:
+      - {name: J1_PIN, current_rating_a: 1.0}
+    protection:
+      fuse: {current_rating_a: 0.5}
+
+todo: []

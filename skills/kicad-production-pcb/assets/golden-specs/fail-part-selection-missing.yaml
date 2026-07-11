@@ -1,0 +1,23 @@
+benchmark:
+  expected_exit: 0
+  checks:
+    - script: part_selection_check.py
+      args: ["--require"]
+      expected_exit: 1
+
+project:
+  name: fail_part_selection_missing
+  stage: production-package
+
+manufacturing:
+  target: jlcpcb
+  jlcpcb:
+    assembly:
+      enabled: true
+
+components:
+  - ref: U1
+    value: Controller
+    footprint: Package_QFN:QFN-32
+    manufacturer: TODO
+    status: pending_selection

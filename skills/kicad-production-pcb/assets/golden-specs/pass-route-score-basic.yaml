@@ -1,0 +1,25 @@
+benchmark:
+  expected_exit: 0
+  checks:
+    - script: route_score_check.py
+      args: ["--require"]
+
+project:
+  name: pass_route_score_basic
+  output_dir: projects/pass_route_score_basic
+  artifacts_dir: artifacts
+
+routing:
+  freerouting:
+    pcb_file: ../golden-routing/simple_route.kicad_pcb
+
+validation:
+  freerouting:
+    route_score:
+      max_vias: 1
+      max_total_length_mm: 25
+      required_routed_nets: [VCC]
+      max_length_by_net_mm:
+        VCC: 25
+      max_vias_by_net:
+        VCC: 1

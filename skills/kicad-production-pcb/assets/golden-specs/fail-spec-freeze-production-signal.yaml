@@ -1,0 +1,13 @@
+benchmark:
+  expected_exit: 1
+  checks:
+    - script: spec_freeze_check.py
+      args: [--before-generation]
+
+project:
+  name: fail_spec_freeze_production_signal
+  output_dir: projects/fail_spec_freeze_production_signal
+  artifacts_dir: artifacts
+
+manufacturing:
+  production_ready: true

@@ -1,0 +1,9 @@
+schema_version: 1
+project_name: TODO_PROJECT
+candidate_id: TODO_CANDIDATE
+batch_id: TODO_PLACEMENT_BATCH
+base_spec_sha256: TODO
+layout_revision: 1
+placements:
+  - ref: TODO_REF
+    position_mm: {x: 0, y: 0, rotation: 0, side: top}

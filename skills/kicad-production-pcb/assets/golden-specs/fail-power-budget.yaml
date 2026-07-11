@@ -1,0 +1,21 @@
+benchmark:
+  expected_exit: 0
+  checks:
+    - script: power_budget_check.py
+      args: ["--strict"]
+      expected_exit: 1
+
+project:
+  name: fail_power_budget
+  output_dir: projects/fail_power_budget
+  artifacts_dir: artifacts
+
+power_domains:
+  - name: LOAD_VCC
+    voltage: {nominal_v: 5.0}
+    source: {name: J1, current_limit_a: 1.0}
+    loads:
+      - {name: LOAD_BANK, peak_current_a: 1.0, quantity: 2}
+    required_margin_percent: 25
+    conductors:
+      - {name: INPUT_CONNECTOR, current_rating_a: 1.0}

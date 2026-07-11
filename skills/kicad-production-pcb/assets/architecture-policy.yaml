@@ -1,0 +1,590 @@
+required_for_stages:
+  - architecture
+  - specification-freeze
+  - implementation
+  - design
+  - detailed-design
+  - schematic
+  - layout
+  - local-mvp
+  - fabrication
+  - order-ready
+  - order-ready-blocked
+  - production
+  - production-package
+  - release
+
+confirmed_intake_statuses:
+  - confirmed
+
+confirmed_intake_targets_requiring_architecture:
+  - draft-spec
+  - local-mvp
+  - production-package
+  - order-ready
+
+required_signal_paths:
+  - validation.spec_closure.required
+  - validation.production.required
+  - manufacturing.production_ready
+  - manufacturing.order_ready
+  - manufacturing.jlcpcb.release
+
+allowed_current_targets:
+  - draft-spec
+  - local-mvp
+  - production-package
+  - order-ready
+
+protected_policy_override_targets:
+  - production-package
+  - order-ready
+
+stage_rank:
+  requirements-only: 0
+  draft-spec: 1
+  architecture: 2
+  component-sourcing: 3
+  part-lock: 4
+  local-mvp: 5
+  production-package: 6
+  order-ready: 7
+
+before_sourcing_target: component-sourcing
+before_generation_target: local-mvp
+
+project_stage_target_map:
+  architecture: draft-spec
+  specification-freeze: local-mvp
+  implementation: local-mvp
+  design: local-mvp
+  detailed-design: local-mvp
+  schematic: local-mvp
+  layout: local-mvp
+  local-mvp: local-mvp
+  fabrication: production-package
+  order-ready-blocked: production-package
+  production: production-package
+  production-package: production-package
+  release: production-package
+  order-ready: order-ready
+
+architecture_states:
+  - proposed
+  - ready
+  - blocked
+  - superseded
+
+ready_states_before_sourcing:
+  - ready
+
+ready_states_before_generation:
+  - ready
+
+technical_decision_owners:
+  - codex
+  - engineer
+  - team
+
+required_architecture_fields:
+  - revision
+  - source_intake_revision
+  - current_target
+  - state
+  - summary
+  - practical_choices_confirmed
+  - technical_decision_owner
+  - outputs
+  - blocks
+  - block_edges
+  - power_domains
+  - interfaces
+  - external_connectors
+  - risk_paths
+  - protection_intents
+  - failure_states
+  - test_and_debug
+  - requirement_coverage
+  - hazard_coverage
+  - open_decisions
+
+required_output_fields:
+  - report_path
+
+require_report_before_sourcing: true
+require_report_before_generation: true
+default_artifacts_dir: artifacts
+default_project_root: .
+require_artifacts_dir_under_project_root: true
+require_report_under_artifacts_dir: true
+
+required_practical_confirmation_fields:
+  - status
+  - confirmed_by
+  - architecture_revision
+  - source_intake_revision
+  - architecture_sha256
+  - user_response_summary
+practical_confirmation_statuses:
+  - confirmed
+practical_confirmation_user_values:
+  - user
+confirmation_digest_excluded_keys:
+  - practical_choice_confirmation
+  - practical_choices_confirmed
+require_intake_user_confirmation: true
+intake_confirmation_user_values:
+  - user
+
+minimum_blocks: 2
+
+required_block_fields:
+  - id
+  - category
+  - role
+  - scope
+  - power_domains
+  - required
+
+block_categories:
+  - power_entry
+  - power_protection
+  - power_conversion
+  - controller
+  - interface
+  - communication
+  - sensor
+  - load
+  - memory
+  - clock
+  - debug
+  - user_io
+  - isolation
+  - mechanical
+  - external_device
+  - other
+
+block_scopes:
+  - onboard
+  - external
+  - mixed
+
+external_block_scopes:
+  - external
+
+boundary_interface_edge_kinds:
+  - power
+  - data
+  - control
+  - analog
+  - clock
+  - rf
+  - status
+  - other
+
+require_external_interface_for_boundary_edges: true
+require_external_interfaces_to_cross_boundary: true
+require_external_interface_risk_path: true
+require_connector_interface_endpoint_match: true
+require_connector_interfaces_external: true
+require_unique_connector_per_external_interface: true
+
+isolated_allowed_block_categories:
+  - mechanical
+
+selection_constraints_field: selection_constraints
+require_selection_constraints_phases:
+  - before-sourcing
+  - before-generation
+selection_constraint_required_scopes:
+  - onboard
+  - mixed
+selection_constraint_exempt_categories:
+  - mechanical
+  - external_device
+required_selection_constraint_fields:
+  - id
+  - kind
+  - statement
+  - required
+  - required_before
+selection_constraint_kinds:
+  - function
+  - voltage
+  - current
+  - power
+  - interface
+  - speed
+  - protection
+  - thermal
+  - environment
+  - mechanical
+  - manufacturing
+  - availability
+  - other
+selection_constraint_unknown_tokens:
+  - TODO
+  - TBD
+  - UNKNOWN
+  - PENDING
+  - FIXME
+
+controller_block_categories:
+  - controller
+
+required_controller_test_kinds:
+  - programming
+  - debug
+  - recovery
+
+required_edge_fields:
+  - id
+  - from
+  - to
+  - kind
+  - direction
+
+edge_kinds:
+  - power
+  - data
+  - control
+  - analog
+  - clock
+  - rf
+  - status
+  - mechanical
+  - thermal
+  - other
+
+edge_directions:
+  - source_to_sink
+  - unidirectional
+  - bidirectional
+  - not_applicable
+
+required_power_domain_fields:
+  - id
+  - source_block
+  - consumer_blocks
+  - voltage_class
+  - current_class
+  - sharing
+  - backfeed_policy
+  - protection_intent
+  - required_before
+
+current_classes:
+  - low
+  - medium
+  - high
+  - unknown
+
+high_current_classes:
+  - high
+
+power_sharing_values:
+  - dedicated
+  - shared
+  - unknown
+
+backfeed_policy_values:
+  - blocked
+  - allowed_with_control
+  - not_applicable
+  - unresolved
+
+protection_intent_values:
+  - required
+  - not_required
+  - unresolved
+
+required_interface_fields:
+  - id
+  - from
+  - to
+  - kind
+  - direction
+  - external
+  - speed_class
+  - voltage_domain
+  - risk_tags
+  - required_before
+
+interface_kinds:
+  - power
+  - data
+  - control
+  - analog
+  - clock
+  - rf
+  - status
+  - other
+
+interface_directions:
+  - input
+  - output
+  - bidirectional
+  - source_to_sink
+  - not_applicable
+
+interface_edge_direction_map:
+  input: unidirectional
+  output: unidirectional
+  bidirectional: bidirectional
+  source_to_sink: source_to_sink
+  not_applicable: not_applicable
+
+speed_classes:
+  - low
+  - medium
+  - high
+  - rf
+  - not_applicable
+  - unknown
+
+speed_risk_kinds:
+  high:
+    - high_speed
+  rf:
+    - rf
+    - high_speed
+
+risk_tags:
+  - high_current
+  - high_speed
+  - sensitive_analog
+  - noisy_switching
+  - rf
+  - thermal
+  - external_cable
+  - hot_plug
+  - user_accessible
+  - other
+
+required_external_connector_fields:
+  - id
+  - block_id
+  - interface_ids
+  - exposure
+  - hot_plug
+  - protection_intent
+  - rationale
+  - required_before
+
+connector_block_categories:
+  - power_entry
+  - interface
+  - communication
+  - debug
+  - user_io
+  - other
+
+connector_exposure_values:
+  - external
+  - user_accessible
+  - internal_service
+
+exposures_requiring_external_risk:
+  - external
+  - user_accessible
+
+hot_plug_values:
+  - "yes"
+  - "no"
+  - unknown
+
+required_risk_path_fields:
+  - id
+  - kind
+  - block_ids
+  - interface_ids
+  - power_domain_ids
+  - connector_ids
+  - reason
+  - constraints
+  - required_before
+
+risk_path_kinds:
+  - high_current
+  - high_speed
+  - sensitive_analog
+  - noisy_switching
+  - rf
+  - thermal
+  - external_cable
+  - other
+
+external_connector_risk_kinds:
+  - external_cable
+
+required_protection_intent_fields:
+  - id
+  - boundary_id
+  - threats
+  - disposition
+  - strategy_classes
+  - rationale
+  - required_before
+
+protection_threats:
+  - reverse_polarity
+  - overcurrent
+  - overvoltage
+  - transient
+  - electrostatic_discharge
+  - surge
+  - backfeed
+  - short_circuit
+  - noise
+  - isolation_fault
+  - other
+
+protection_strategy_classes:
+  - polarity_control
+  - current_limit
+  - fuse
+  - clamp
+  - filter
+  - isolation
+  - controlled_switch
+  - discharge_path
+  - layout_only
+  - other
+
+required_failure_state_fields:
+  - id
+  - trigger
+  - affected_blocks
+  - safe_state
+  - required_before
+
+minimum_failure_states: 1
+
+required_test_debug_fields:
+  - id
+  - kind
+  - target_blocks
+  - disposition
+  - rationale
+  - required_before
+
+test_debug_kinds:
+  - programming
+  - debug
+  - recovery
+  - status
+  - measurement
+  - test_point
+  - functional_test
+  - not_applicable
+
+test_debug_dispositions:
+  - required
+  - not_required
+  - unresolved
+
+minimum_test_debug_items: 1
+
+required_requirement_coverage_fields:
+  - requirement_path
+  - block_ids
+  - rationale
+
+required_intake_coverage_paths:
+  - intake.user_intent
+  - intake.success_criteria
+  - intake.system_boundary
+
+conditional_intake_coverage_paths:
+  - budget_intent
+
+minimum_requirement_coverage: 1
+
+required_hazard_coverage_fields:
+  - hazard
+  - control_ids
+  - rationale
+  - required_before
+
+required_open_decision_fields:
+  - id
+  - kind
+  - owner
+  - status
+  - description
+  - blocks
+  - next_action
+
+open_decision_kinds:
+  - practical
+  - technical
+  - evidence
+
+open_decision_owners:
+  - user
+  - codex
+  - evidence
+  - engineer
+  - manufacturer
+
+open_decision_statuses:
+  - open
+  - deferred
+  - resolved
+
+unresolved_open_decision_statuses:
+  - open
+  - deferred
+
+beginner_input_styles:
+  - use_case_only
+  - scenario_only
+  - natural_language
+
+beginner_experience_values:
+  - beginner
+
+forbidden_beginner_technical_owner_values:
+  - user
+
+unresolved_current_class_values:
+  - unknown
+
+unresolved_power_sharing_values:
+  - unknown
+
+unresolved_backfeed_values:
+  - unresolved
+
+unresolved_protection_values:
+  - unresolved
+
+unresolved_speed_values:
+  - unknown
+
+unresolved_hot_plug_values:
+  - unknown
+
+unresolved_test_debug_values:
+  - unresolved
+
+forbidden_architecture_keys:
+  - components
+  - component
+  - symbol
+  - footprint
+  - manufacturer
+  - mpn
+  - lcsc_part
+  - pin
+  - pins
+  - pad
+  - pads
+  - net
+  - nets
+  - route
+  - routes
+  - placement
+  - positions
+  - trace_width
+  - via_diameter

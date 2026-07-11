@@ -1,0 +1,8 @@
+interface:
+  display_name: "KiCad 生产 PCB"
+  short_description: "从小白需求确认、模块架构到严格生产验证的 KiCad PCB 流程"
+  brand_color: "#0F766E"
+  default_prompt: "使用 $kicad-production-pcb 从场景、预算和目标确认开始，完成架构、物料与 Spec Freeze；先独立生成并门禁真实命名网络、完整引脚和 strict ERC 原理图证据，通过后才生成并严格验证 PCB/JLCPCB 生产文件。"
+
+policy:
+  allow_implicit_invocation: true

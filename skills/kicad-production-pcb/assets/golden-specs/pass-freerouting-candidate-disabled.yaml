@@ -1,0 +1,9 @@
+benchmark:
+  expected_exit: 0
+  checks:
+    - script: freerouting_candidate_runner.py
+
+project:
+  name: pass_freerouting_candidate_disabled
+  output_dir: projects/pass_freerouting_candidate_disabled
+  artifacts_dir: artifacts

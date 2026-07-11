@@ -1,0 +1,80 @@
+schema_version: 1
+project_name: pass_part_selection_basic
+evaluated_at: '2026-07-10T12:00:00Z'
+architecture_sha256: e6f86a6813a44b0c3be5ceeecc5e4708878dcb869df75130fb10885730251d90
+sourcing_context_sha256: 71214e8befae0009d3649a33ba4a310dbb8c45ae9395bb5bdf1a8343df1f6ac4
+candidate_manifest:
+  path: assets/golden-sourcing/pass_part_selection_basic/candidates.yaml
+  sha256: 68d15a7af2763e0797e7e30435c8a3ddc4b8668f8dbda81b01edc0134612d39f
+requirements:
+- requirement_id: CONTROL_PRIMARY
+  selected_candidate_id: CONTROL_CANDIDATE_A
+  candidates:
+  - candidate_id: CONTROL_CANDIDATE_A
+    qualified: true
+    reasons: []
+    score: 87.98
+    order_quantity: 11
+    in_stock: 5000
+    unit_price: 8.2
+    extended_cost: 90.2
+    needed_quantity: 11
+    moq_waste_quantity: 0
+    manufacturer: Reference Logic Co
+    mpn: RLX32-A1
+    supplier_part: C910001
+    rank: 1
+- requirement_id: EXTERNAL_CONNECTOR
+  selected_candidate_id: EXTERNAL_CANDIDATE_A
+  candidates:
+  - candidate_id: EXTERNAL_CANDIDATE_A
+    qualified: true
+    reasons: []
+    score: 96.175
+    order_quantity: 15
+    in_stock: 8000
+    unit_price: 0.55
+    extended_cost: 8.25
+    needed_quantity: 11
+    moq_waste_quantity: 4
+    manufacturer: Reference Interconnect Co
+    mpn: RI04-A1
+    supplier_part: C910002
+    rank: 1
+- requirement_id: POWER_CONNECTOR
+  selected_candidate_id: POWER_CANDIDATE_A
+  candidates:
+  - candidate_id: POWER_CANDIDATE_A
+    qualified: true
+    reasons: []
+    score: 96.37
+    order_quantity: 15
+    in_stock: 9000
+    unit_price: 0.42
+    extended_cost: 6.3
+    needed_quantity: 11
+    moq_waste_quantity: 4
+    manufacturer: Reference Interconnect Co
+    mpn: RI02-P1
+    supplier_part: C910003
+    rank: 1
+selected_set:
+  compatibility:
+  - id: COMPAT_POWER_CONTROL
+    passed: true
+    reason: ''
+  - id: COMPAT_POWER_INTERFACE
+    passed: true
+    reason: ''
+  - id: COMPAT_CONTROL_INTERFACE
+    passed: true
+    reason: ''
+  - id: COMPAT_EXTERNAL_BOUNDARY
+    passed: true
+    reason: ''
+  component_order_total: 104.75
+  component_cost_per_board: 10.475
+  non_component_estimate_total: 80.0
+  estimated_order_total: 184.75
+  currency: CNY
+  moq_waste_quantity: 8

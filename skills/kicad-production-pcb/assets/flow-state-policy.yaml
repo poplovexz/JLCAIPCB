@@ -1,0 +1,28 @@
+production_stage_values:
+  - fabrication
+  - order-ready
+  - order_ready
+  - order-ready-blocked
+  - order_ready_blocked
+  - production
+  - production-package
+  - production_package
+  - release
+
+order_ready_stage_values:
+  - order-ready
+  - order_ready
+
+production_signals:
+  - manufacturing.production_ready
+  - manufacturing.order_ready
+  - manufacturing.jlcpcb.release
+  - validation.production.required
+
+order_ready_signals:
+  - manufacturing.order_ready
+  - validation.order_ready.required
+
+strict_for_production: true
+forbid_allow_violations_for_production: true
+forbid_continue_on_check_fail_for_production: true

@@ -1,0 +1,561 @@
+schema_version: 3
+executor_version: 3
+manifest_schema_version: 3
+
+freeze_status: frozen
+required_stage_values:
+  - local-mvp
+  - local_mvp
+  - fabrication
+  - production
+  - production-package
+  - production_package
+  - release
+  - order-ready
+  - order_ready
+  - order-ready-blocked
+  - order_ready_blocked
+
+production_stage_values:
+  - fabrication
+  - production
+  - production-package
+  - production_package
+  - release
+  - order-ready
+  - order_ready
+  - order-ready-blocked
+  - order_ready_blocked
+
+production_signals:
+  - manufacturing.production_ready
+  - manufacturing.order_ready
+  - manufacturing.jlcpcb.release
+  - validation.production.required
+
+force_required_field: validation.spec_freeze.required
+policy_override_field: validation.spec_freeze.policy_file
+
+paths:
+  project_root_field: project.root_dir
+  output_dir_field: project.output_dir
+  artifacts_dir_field: project.artifacts_dir
+  manifest_directory: spec-freeze
+  manifest_filename: spec-freeze.yaml
+  require_explicit_project_root_for_production: true
+  require_spec_under_project_root: true
+  require_output_under_project_root: true
+  require_artifacts_under_project_root: true
+
+product_baseline:
+  schema_version: 1
+  filename: product-baseline.md
+  preview_filename: product-baseline.preview.md
+  preview_status: preview-not-frozen
+  title_template: "{project_name} Product Baseline"
+  generated_notice: "Generated from the frozen Spec. Do not edit this document by hand."
+  unknown_text: "Not declared"
+  max_brief_chars: 360
+  metadata_heading: Freeze Identity
+  metadata_fields:
+    - label: Document state
+      context_key: status
+    - label: Lifecycle tier
+      context_key: tier
+    - label: Freeze revision
+      context_key: freeze_revision
+    - label: Baseline timestamp
+      context_key: frozen_at
+    - label: Spec path
+      context_key: spec_path
+    - label: Spec SHA256
+      context_key: spec_sha256
+    - label: Policy SHA256
+      context_key: policy_sha256
+    - label: Renderer SHA256
+      context_key: renderer_sha256
+  build_brief:
+    heading: PCB Build Brief
+    intro: "Read this section first. Open the frozen Spec sections only when implementing the corresponding PCB module."
+    columns: [Decision, Frozen value]
+    fields:
+      - label: Project
+        path: project.name
+        mode: scalar
+        required: true
+      - label: Current target
+        paths: [project.stage, requirement_intake.decision.current_target]
+        mode: scalar
+        required: true
+      - label: Product intent
+        paths:
+          - requirement_intake.intake.user_intent
+          - user_profile.use_case
+          - requirements.function.summary
+        mode: scalar
+      - label: Success criteria
+        paths: [requirement_intake.intake.success_criteria]
+        mode: scalar
+      - label: System boundary
+        paths: [requirement_intake.intake.system_boundary]
+        mode: scalar
+      - label: Use environment
+        paths: [requirement_intake.intake.use_environment]
+        mode: scalar
+      - label: Failure consequence
+        paths: [requirement_intake.intake.failure_consequence]
+        mode: scalar
+      - label: Budget basis
+        path: requirement_intake.budget_intent
+        mode: mapping_fields
+        fields:
+          - {label: Status, path: status}
+          - {label: Currency, path: currency}
+          - {label: Target, path: target_amount}
+          - {label: Maximum, path: maximum_amount}
+          - {label: Quantity basis, path: quantity_basis}
+          - {label: Scope, path: scope}
+      - label: Manufacturing target
+        path: manufacturing
+        mode: mapping_fields
+        fields:
+          - {label: Supplier/process, path: target}
+          - {label: Mode, path: mode}
+          - {label: Quantity, path: quantity}
+          - {label: Outputs, path: required_outputs}
+      - label: Board envelope
+        mode: template
+        template: "{width} x {height} mm; {layers} copper layer(s)"
+        values:
+          width: board.size_mm.width
+          height: board.size_mm.height
+          layers: board.layers.copper
+      - label: Architecture blocks
+        path: architecture.blocks
+        mode: names
+        item_paths: [id, name]
+      - label: Power domains
+        path: power_domains
+        mode: names
+        item_paths: [name, id]
+      - label: Design instances
+        path: components
+        mode: count
+      - label: Electrical nets
+        path: nets
+        mode: names
+        item_paths: [name, id]
+      - label: Connectivity batches
+        path: connectivity_batches
+        mode: names
+        item_paths: [name, id]
+      - label: Open pre-fabrication blockers
+        path: todo
+        mode: count_where
+        where_all:
+          - {path: blocking, equals: true}
+        where_none:
+          - {path: status, in: [done, closed]}
+  detail_sections:
+    - heading: Requirements Baseline
+      intro: "Confirmed use case, budget, assumptions, success conditions, and formal requirements."
+      sources:
+        - {label: Requirement intake, path: requirement_intake}
+        - {label: User profile, path: user_profile}
+        - {label: Assumption profile, path: assumption_profile}
+        - {label: Requirements, path: requirements}
+    - heading: Block Architecture
+      intro: "Module boundaries, power and interface directions, risks, protection intent, and test/debug paths."
+      sources:
+        - {label: Architecture contract, path: architecture}
+    - heading: Sourcing And Library Identity
+      intro: "Part-lock, supplier evidence, package identity, and project-local KiCad library inputs."
+      sources:
+        - {label: Sourcing contract, path: sourcing}
+        - {label: KiCad library contract, path: kicad}
+    - heading: Frozen PCB Design Contract
+      intro: "Electrical, board, manufacturing, and connectivity inputs consumed by generation."
+      sources:
+        - {label: Power domains, path: power_domains}
+        - {label: Schematic generation contract, path: schematic}
+        - {label: Component instances, path: components}
+        - {label: Nets, path: nets}
+        - {label: Expected net graph, path: expected_net_graph}
+        - {label: Connectivity batches, path: connectivity_batches}
+        - {label: Board constraints, path: board}
+        - {label: Manufacturing intent, path: manufacturing}
+    - heading: Verification And Remaining Work
+      intro: "Pre-generation verification dispositions and work that remains explicitly classified."
+      sources:
+        - {label: Verification, path: verification}
+        - {label: TODO dispositions, path: todo}
+        - {label: Validation controls, path: validation}
+  evidence_heading: Bound Evidence
+  preflight_heading: Freeze Preflight Results
+  empty_evidence_text: "No external artifact binding is required for this lifecycle tier."
+  empty_preflight_text: "Freeze preflights have not been recorded for this preview."
+  handoff_heading: Downstream Handoff Rules
+  handoff_rules:
+    - "Treat the frozen Spec as machine truth and this document as its generated human/Codex view."
+    - "Start with PCB Build Brief, then read only the frozen Spec sections needed by the current PCB module."
+    - "Do not recover missing decisions from chat history, questionnaires, or search pages; raise a change request to the owning upstream stage."
+    - "Open raw evidence only for audit, freshness checks, substitutions, or an approved change."
+    - "Any design-intent, architecture, selected-part, library-binding, or formal-Spec change requires regeneration and a new Spec Freeze transaction."
+
+downstream_evidence:
+  schema_version: 1
+  manifest_filename: downstream-manifest.yaml
+  generated:
+    required_files:
+      - "{output_dir}/{project_name}.kicad_pro"
+      - "{output_dir}/{project_name}.kicad_sch"
+      - "{output_dir}/{project_name}.kicad_pcb"
+      - "{output_dir}/sym-lib-table"
+      - "{output_dir}/fp-lib-table"
+      - "{output_dir}/library_audit.json"
+      - "{output_dir}/library_audit.md"
+      - "{output_dir}/bom.csv"
+      - "{output_dir}/TODO.md"
+      - "{artifacts_dir}/checks/{project_name}/schematic-stage-manifest.yaml"
+      - "{artifacts_dir}/checks/{project_name}/generated_netlist.xml"
+      - "{artifacts_dir}/checks/{project_name}/generated_net_graph.json"
+      - "{artifacts_dir}/checks/{project_name}/erc.rpt"
+      - "{artifacts_dir}/checks/{project_name}/schematic-review.pdf"
+      - "{artifacts_dir}/package-binding/{project_name}/package-binding-stage.yaml"
+      - "{artifacts_dir}/layout-stage/{project_name}/layout-stage.yaml"
+      - "{artifacts_dir}/routing-stage/{project_name}/routing-stage.yaml"
+      - "{artifacts_dir}/local-validation/{project_name}/local-validation-manifest.yaml"
+      - "{artifacts_dir}/local-validation/{project_name}/erc.json"
+      - "{artifacts_dir}/local-validation/{project_name}/drc.json"
+  release:
+    required_files:
+      - "{artifacts_dir}/checks/{project_name}/erc.rpt"
+      - "{artifacts_dir}/checks/{project_name}/drc.rpt"
+    required_directories:
+      - "{artifacts_dir}/fab/{project_name}"
+
+digest:
+  excluded_top_level_keys:
+    - spec_freeze
+    - benchmark
+  bound_sections:
+    - requirement_intake
+    - requirements
+    - architecture
+    - power_domains
+    - sourcing
+    - kicad
+    - schematic
+    - board
+    - layout
+    - routing
+    - manufacturing
+    - components
+    - nets
+    - expected_net_graph
+    - connectivity_batches
+    - verification
+    - todo
+
+section_shapes:
+  project: mapping
+  requirement_intake: mapping
+  requirements: mapping
+  architecture: mapping
+  power_domains: list
+  sourcing: mapping
+  kicad: mapping
+  schematic: mapping
+  board: mapping
+  layout: mapping
+  routing: mapping
+  manufacturing: mapping
+  components: list
+  nets: list
+  expected_net_graph: mapping
+  connectivity_batches: list
+  verification: mapping
+  todo: list
+
+required_sections:
+  local_mvp:
+    - project
+    - requirement_intake
+    - requirements
+    - architecture
+    - power_domains
+    - kicad
+    - schematic
+    - board
+    - layout
+    - routing
+    - manufacturing
+    - components
+    - nets
+    - expected_net_graph
+    - connectivity_batches
+    - verification
+    - todo
+  production:
+    - project
+    - requirement_intake
+    - requirements
+    - architecture
+    - power_domains
+    - sourcing
+    - kicad
+    - schematic
+    - board
+    - layout
+    - routing
+    - manufacturing
+    - components
+    - nets
+    - expected_net_graph
+    - connectivity_batches
+    - verification
+    - todo
+
+required_fields:
+  local_mvp:
+    - project.name
+    - project.stage
+    - project.root_dir
+    - project.output_dir
+    - project.artifacts_dir
+    - project.kicad_major_required
+    - board.size_mm.width
+    - board.size_mm.height
+    - board.layers.copper
+    - board.stackup.board_thickness_mm
+    - board.stackup.copper_oz
+    - board.fabrication.min_track_width_mm
+    - board.fabrication.min_clearance_mm
+    - board.fabrication.min_via_diameter_mm
+    - board.fabrication.min_via_drill_mm
+    - manufacturing.target
+    - manufacturing.mode
+    - manufacturing.quantity
+    - manufacturing.required_outputs
+  production:
+    - project.root_dir
+    - sourcing.part_lock.status
+    - sourcing.part_lock.path
+    - sourcing.part_lock.sha256
+    - sourcing.downstream_binding.status
+    - sourcing.downstream_binding.manifest.path
+    - sourcing.downstream_binding.manifest.sha256
+
+positive_number_fields:
+  - project.kicad_major_required
+  - board.size_mm.width
+  - board.size_mm.height
+  - board.layers.copper
+  - board.stackup.board_thickness_mm
+  - board.stackup.copper_oz
+  - board.fabrication.min_track_width_mm
+  - board.fabrication.min_clearance_mm
+  - board.fabrication.min_via_diameter_mm
+  - board.fabrication.min_via_drill_mm
+  - manufacturing.quantity
+
+forbidden_duplicate_sections:
+  selected_parts: Use sourcing.part_lock as the selected-part identity source, components as reference instances, and sourcing.downstream_binding as the symbol/footprint/pin-map binding.
+
+manufacturing_modes:
+  - bare-pcb
+  - pcba
+
+manufacturing_required_outputs:
+  bare-pcb:
+    - gerber
+    - drill
+  pcba:
+    - gerber
+    - drill
+    - bom
+    - position
+
+board_constraint_statuses:
+  - defined
+  - not_applicable
+
+verification_disposition_statuses:
+  - not_applicable
+verification_disposition_required_fields:
+  - rationale
+
+board_constraint_areas:
+  local_mvp:
+    - outline
+    - stackup
+    - fabrication
+    - placement
+    - mechanical
+    - keepouts
+    - external_connectors
+    - high_current
+    - controlled_impedance
+  production:
+    - outline
+    - stackup
+    - fabrication
+    - placement
+    - mechanical
+    - keepouts
+    - external_connectors
+    - high_current
+    - controlled_impedance
+
+todo:
+  closed_statuses:
+    - done
+    - closed
+  explicit_disposition_statuses:
+    - non_blocking
+    - not_applicable
+  non_blocking_status: non_blocking
+  not_applicable_status: not_applicable
+  post_fab_categories:
+    - post_fab_validation
+    - post_fab_bringup
+    - post_fab_lab_test
+    - post_fab_mechanical_fit
+  non_blocking_category: non_blocking_note
+  required_disposition_fields:
+    - owner
+    - rationale
+
+production_policy_controls:
+  spec_closure_required_areas:
+    - requirements
+    - power_domains
+    - verification
+    - todo_disposition
+    - stage
+  spec_closure_verification_sections:
+    - signal_integrity
+    - power_integrity
+    - thermal
+    - emc
+  requirements_required_areas:
+    - function
+    - power
+    - key_parts
+    - interfaces
+    - mechanical
+    - manufacturing
+    - risk_review
+  requirements_allowed_statuses:
+    - confirmed
+    - locked
+    - not_applicable
+  minimum_power_margin_percent: 20
+  require_power_domain_protection: true
+  forbid_single_pin_net_allowlist: true
+  forbid_generated_extra_pin_allowlist: true
+
+artifact_bindings:
+  - id: architecture_report
+    tiers:
+      - local_mvp
+      - production
+    path_field: architecture.outputs.report_path
+  - id: part_lock
+    tiers:
+      - production
+    path_field: sourcing.part_lock.path
+    expected_sha256_field: sourcing.part_lock.sha256
+  - id: library_binding_manifest
+    tiers:
+      - production
+    path_field: sourcing.downstream_binding.manifest.path
+    expected_sha256_field: sourcing.downstream_binding.manifest.sha256
+
+preflight:
+  local_mvp:
+    - id: requirement_intake
+      script: requirement_intake_gate.py
+      args:
+        - --before-generation
+    - id: beginner_intake
+      script: beginner_intake_check.py
+      args: []
+    - id: architecture
+      script: architecture_gate.py
+      args:
+        - --before-generation
+    - id: spec_closure
+      script: spec_closure_check.py
+      args:
+        - --strict
+    - id: part_selection
+      script: part_selection_check.py
+      args:
+        - --before-generation
+    - id: readiness
+      script: readiness_preflight.py
+      args: []
+    - id: verification
+      script: verification_preflight.py
+      args: []
+    - id: schema
+      script: spec_schema_check.py
+      args: []
+    - id: net_graph
+      script: spec_net_graph_check.py
+      args:
+        - --exact
+    - id: schematic_contract
+      script: schematic_stage_gate.py
+      args:
+        - --before-generation
+    - id: connectivity_batches
+      script: connectivity_batch_check.py
+      args:
+        - --auto-require
+  production:
+    - id: requirement_intake
+      script: requirement_intake_gate.py
+      args:
+        - --before-generation
+    - id: beginner_intake
+      script: beginner_intake_check.py
+      args: []
+    - id: architecture
+      script: architecture_gate.py
+      args:
+        - --before-generation
+    - id: spec_closure
+      script: spec_closure_check.py
+      args:
+        - --strict
+    - id: part_selection
+      script: part_selection_check.py
+      args:
+        - --require
+        - --before-generation
+    - id: readiness
+      script: readiness_preflight.py
+      args:
+        - --production
+    - id: verification
+      script: verification_preflight.py
+      args:
+        - --strict
+    - id: schema
+      script: spec_schema_check.py
+      args:
+        - --production
+    - id: net_graph
+      script: spec_net_graph_check.py
+      args:
+        - --exact
+    - id: schematic_contract
+      script: schematic_stage_gate.py
+      args:
+        - --before-generation
+    - id: connectivity_batches
+      script: connectivity_batch_check.py
+      args:
+        - --auto-require

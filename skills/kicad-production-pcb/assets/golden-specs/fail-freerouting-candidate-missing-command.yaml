@@ -1,0 +1,15 @@
+benchmark:
+  expected_exit: 0
+  checks:
+    - script: freerouting_candidate_runner.py
+      args: ["--require"]
+      expected_exit: 1
+
+project:
+  name: fail_freerouting_candidate_missing_command
+  output_dir: projects/fail_freerouting_candidate_missing_command
+  artifacts_dir: artifacts
+
+routing:
+  freerouting:
+    enabled: true

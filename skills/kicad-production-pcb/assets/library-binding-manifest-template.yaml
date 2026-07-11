@@ -1,0 +1,52 @@
+schema_version: 2
+project_name: TODO
+part_lock_sha256: TODO
+generated_at: TODO_ISO8601
+bindings:
+  - ref: TODO_REF
+    requirement_id: TODO_REQUIREMENT_ID
+    candidate_id: TODO_CANDIDATE_ID
+    symbol_library: TODO_PROJECT_LIBRARY
+    symbol_id: TODO_LIBRARY_SYMBOL_ID
+    footprint_library: TODO_PROJECT_LIBRARY
+    footprint: TODO_LIBRARY_FOOTPRINT_ID
+    source_footprint_candidate: TODO_CANDIDATE_FOOTPRINT
+    symbol_file_evidence:
+      file: projects/TODO_PROJECT/lib/TODO_PROJECT.kicad_sym
+      sha256: TODO
+    footprint_file_evidence:
+      file: projects/TODO_PROJECT/lib/TODO_PROJECT.pretty/TODO_FOOTPRINT.kicad_mod
+      sha256: TODO
+    library_origin: imported
+    import_provenance:
+      file: artifacts/sourcing/TODO_PROJECT/evidence/TODO_IMPORT_PROVENANCE.json
+      sha256: TODO
+    package_verification:
+      status: verified
+      package_name: TODO_PACKAGE
+      pin_count: 1
+      footprint_package_token: TODO_PACKAGE_TOKEN
+    pinmap_evidence:
+      file: artifacts/sourcing/TODO_PROJECT/evidence/TODO_PINMAP.json
+      sha256: TODO
+    datasheet_pin_table_evidence:
+      file: artifacts/sourcing/TODO_PROJECT/evidence/TODO_DATASHEET_PIN_TABLE.json
+      sha256: TODO
+    footprint_geometry_evidence:
+      file: artifacts/sourcing/TODO_PROJECT/evidence/TODO_GEOMETRY.json
+      sha256: TODO
+    orientation_contract:
+      datasheet_view: top
+      pin1_reference: TODO_DATASHEET_PIN1_MARK
+      footprint_zero_axis: TODO_AXIS
+      placement_origin: body_center
+      cpl_rotation_offset_deg: 0
+      bottom_side_transform: mirror_then_rotate
+      polarity_kind: TODO_NONE_OR_POLARITY_KIND
+      source_evidence_id: TODO_DATASHEET_EVIDENCE_ID
+      source_evidence_sha256: TODO
+      source_locator: TODO_DATASHEET_PAGE_OR_TABLE
+      assembly_source_evidence_id: TODO_ASSEMBLY_OR_SUPPLIER_EVIDENCE_ID
+      assembly_source_evidence_sha256: TODO
+      assembly_source_locator: TODO_PROVIDER_ORIENTATION_REFERENCE
+    status: verified

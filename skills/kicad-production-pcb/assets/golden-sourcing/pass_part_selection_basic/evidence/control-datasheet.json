@@ -1,0 +1,1 @@
+{"record_type":"manufacturer_datasheet_fixture","manufacturer":"Reference Logic Co","mpn":"RLX32-A1","package":{"name":"QFN-32","pin_count":32},"lifecycle":{"status":"active"},"capabilities":{"functions":["programmable_control"],"logic_voltage":{"value":3.3,"unit":"V"},"interface_family":["generic-control"]}}

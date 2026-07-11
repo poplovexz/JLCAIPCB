@@ -1,0 +1,54 @@
+benchmark:
+  expected_exit: 1
+  checks:
+    - script: requirement_intake_gate.py
+intake:
+  project_name: missing_budget_case
+  user_intent: Build a low-risk indoor control board.
+  input_style: guided
+  use_environment: Indoor bench.
+  connected_devices: One external low-voltage device.
+  power_source: External low-voltage adapter.
+  size_or_mechanical: No known enclosure limit.
+  manufacturing_intent: Prototype first.
+  success_criteria: The external device responds during a bench test.
+  system_boundary: The board provides control; the device remains external.
+  failure_consequence: The prototype stops without a known safety hazard.
+  desired_end_target: local-mvp
+safety_screening:
+  level: standard
+  hazards: []
+  rationale: Low-voltage indoor use.
+  blocks_automatic_assumptions: false
+evidence_inputs:
+  available: []
+  requested: []
+missing_information:
+  must_ask_now: []
+  can_defer: []
+  blocks_mvp: []
+  blocks_production: []
+  blocks_order_ready: []
+safe_assumptions:
+  - id: mvp-only
+    assumption: Keep this as a local MVP.
+    reason: Production inputs are not closed.
+    risk: No production claim is allowed.
+    stage_allowed: local-mvp
+unsafe_assumptions:
+  - id: production-cost
+    unknown: Production cost limit.
+    why_not_guess: It changes sourcing decisions.
+    required_before: production-package
+confirmation:
+  status: pending
+  confirmed_by: none
+  intake_revision: 1
+  confirmed_revision: 0
+  user_response_summary: Awaiting confirmation.
+decision:
+  current_target: requirements-only
+  can_create_spec: false
+  can_generate_kicad: false
+  can_run_erc_drc: false
+  next_action: Ask for a practical budget range or record Not sure.

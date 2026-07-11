@@ -1,0 +1,15 @@
+benchmark:
+  expected_exit: 0
+  checks:
+    - script: requirements_gate.py
+      args: ["--strict"]
+      expected_exit: 1
+
+project:
+  name: fail_requirements_incomplete
+  output_dir: projects/fail_requirements_incomplete
+  artifacts_dir: artifacts
+
+requirements:
+  function: {status: confirmed, summary: "Function is known."}
+  power: {status: unknown, summary: ""}

@@ -1,0 +1,78 @@
+benchmark:
+  expected_exit: 0
+  checks:
+    - verification_preflight.py
+
+project:
+  name: pass_verification_risk_precheck
+  output_dir: projects/pass_verification_risk_precheck
+  artifacts_dir: artifacts
+
+board:
+  stackup:
+    board_thickness_mm: 1.6
+    copper_oz: 1
+
+nets:
+  - {name: DATA_P, class: signal}
+  - {name: DATA_N, class: signal}
+  - {name: VMAIN, class: power}
+  - {name: GND, class: power}
+
+components:
+  - ref: U1
+    value: LOAD
+    pads: {"1": VMAIN, "2": GND, "3": DATA_P, "4": DATA_N}
+
+routes:
+  - net: DATA_P
+    width_mm: 0.20
+    length_mm: 24.0
+  - net: DATA_N
+    width_mm: 0.20
+    length_mm: 24.4
+  - net: VMAIN
+    width_mm: 0.80
+    length_mm: 20.0
+
+vias:
+  - net: DATA_P
+  - net: DATA_N
+
+power_domains:
+  - name: VMAIN
+    source: {current_limit_a: 1.0}
+
+verification:
+  signal_integrity:
+    differential_pairs:
+      - name: DATA_PAIR
+        nets: [DATA_P, DATA_N]
+        impedance_ohm: 90
+        max_skew_mm: 1.0
+        max_vias_per_net: 1
+        stackup_required: true
+        require_length_check: true
+  power_integrity:
+    rails:
+      - name: VMAIN
+        nominal_v: 5.0
+        tolerance_percent: 5
+        max_load_a: 0.4
+        power_domain: VMAIN
+        nets: [VMAIN]
+        min_route_width_mm: 0.50
+  thermal:
+    ambient_c: 40
+    components:
+      - ref: U1
+        max_power_w: 0.5
+        theta_ja_c_per_w: 60
+        max_junction_temp_c: 100
+  emc:
+    risk_items:
+      - name: DATA_CONNECTOR
+        category: external_cable
+        description: External data cable risk is mitigated in this golden case.
+        mitigations:
+          - description: Connector protection and return-path review are required before release.

@@ -1,0 +1,470 @@
+schema_versions: [1]
+
+path_resolution:
+  project_root_field: project.root_dir
+  require_explicit_root_in_production: true
+  forbid_filesystem_root: true
+  require_spec_under_project_root: true
+  require_artifacts_under_project_root: true
+
+unknown_tokens:
+  - TODO
+  - TBD
+  - UNKNOWN
+  - PENDING
+  - FIXME
+  - REQUIRED
+
+production_stage_values:
+  - fabrication
+  - order-ready
+  - order_ready
+  - order-ready-blocked
+  - order_ready_blocked
+  - production
+  - production-package
+  - production_package
+  - release
+
+manufacturing_targets:
+  - jlcpcb
+  - 嘉立创
+  - lcsc
+
+context_limits:
+  minimum_board_quantity: 1
+  maximum_board_quantity: 1000000
+  minimum_attrition_rate: 0
+  maximum_attrition_rate: 0.5
+  minimum_candidates_per_requirement: 1
+  maximum_candidates_per_requirement: 12
+  minimum_search_rounds: 1
+  maximum_search_rounds: 8
+  minimum_stock_max_age_hours: 1
+  maximum_stock_max_age_hours: 720
+  minimum_lock_max_age_hours: 1
+  maximum_lock_max_age_hours: 720
+
+provider_kinds:
+  - supplier
+  - assembler
+  - distributor
+  - manufacturer
+
+candidate_supplier_provider_kinds:
+  - supplier
+  - distributor
+
+trusted_provider_profiles:
+  lcsc-cn:
+    kind: supplier
+    domains: [lcsc.com]
+  jlcpcb-parts:
+    kind: assembler
+    domains: [jlcpcb.com]
+
+assembly_dispositions:
+  - pcba
+  - manual_fit
+  - hand_assembly
+  - dnp
+  - not_procured
+
+procured_dispositions:
+  - pcba
+  - manual_fit
+  - hand_assembly
+
+nonblocking_dispositions:
+  - dnp
+  - not_procured
+
+allowed_component_part_fields:
+  - lcsc_part
+  - jlcpcb_part
+  - supplier_part
+  - supplier_sku
+default_component_part_field: supplier_part
+
+architecture_requirements:
+  required_block_scopes:
+    - onboard
+    - mixed
+  exempt_block_categories:
+    - mechanical
+    - external_device
+  selection_constraints_field: selection_constraints
+
+component_roles:
+  required_fields:
+    - id
+    - kind
+    - purpose
+    - required
+    - component_refs
+    - block_ids
+    - constraint_ids
+    - dependency_role_ids
+    - architecture_refs
+  kinds:
+    - controller
+    - power-entry
+    - power-conversion
+    - protection
+    - connector
+    - interface
+    - sensing
+    - load-driver
+    - timing
+    - memory
+    - programming-debug
+    - indicator
+    - passive-support
+    - mechanical
+    - other
+  architecture_reference_collections:
+    protection_intent_ids: protection_intents
+    external_connector_ids: external_connectors
+    test_debug_ids: test_and_debug
+    power_domain_ids: power_domains
+  required_architecture_collections:
+    - protection_intents
+    - external_connectors
+    - test_and_debug
+    - power_domains
+
+selected_set_compatibility:
+  required_fields:
+    - id
+    - left_requirement_id
+    - left_attribute
+    - operator
+    - rationale
+    - architecture_refs
+  architecture_reference_collections:
+    block_edge_ids: block_edges
+    interface_ids: interfaces
+    power_domain_ids: power_domains
+  covered_block_edge_kinds:
+    - power
+    - data
+    - control
+  required_architecture_collections:
+    - interfaces
+    - power_domains
+
+machine_constraint:
+  criteria_field: criteria
+  required_fields:
+    - attribute
+    - operator
+  operators:
+    - eq
+    - ne
+    - gt
+    - gte
+    - lt
+    - lte
+    - in
+    - contains
+    - contains_all
+    - intersects
+    - exists
+    - range_contains
+    - ranges_overlap
+  value_optional_operators:
+    - exists
+  numeric_operators:
+    - gt
+    - gte
+    - lt
+    - lte
+  compound_fields:
+    - all_of
+    - any_of
+  condition_field: when
+  numeric_adjustment_fields:
+    - actual_multiplier
+    - required_multiplier
+  minimum_multiplier: 0
+  maximum_multiplier: 10
+  require_evidence_ids: true
+
+unit_conversions:
+  V: {dimension: voltage, factor: 1.0}
+  mV: {dimension: voltage, factor: 0.001}
+  uV: {dimension: voltage, factor: 0.000001}
+  A: {dimension: current, factor: 1.0}
+  mA: {dimension: current, factor: 0.001}
+  uA: {dimension: current, factor: 0.000001}
+  W: {dimension: power, factor: 1.0}
+  mW: {dimension: power, factor: 0.001}
+  ohm: {dimension: resistance, factor: 1.0}
+  kohm: {dimension: resistance, factor: 1000.0}
+  Mohm: {dimension: resistance, factor: 1000000.0}
+  Hz: {dimension: frequency, factor: 1.0}
+  kHz: {dimension: frequency, factor: 1000.0}
+  MHz: {dimension: frequency, factor: 1000000.0}
+  GHz: {dimension: frequency, factor: 1000000000.0}
+  C: {dimension: temperature_celsius, factor: 1.0}
+  mm: {dimension: length, factor: 1.0}
+  um: {dimension: length, factor: 0.001}
+
+candidate_manifest:
+  stop_reasons:
+    - qualified_candidates_found
+    - search_exhausted
+    - constraints_unsatisfied
+    - provider_unavailable
+  successful_stop_reasons:
+    - qualified_candidates_found
+  required_identity_fields:
+    - manufacturer
+    - mpn
+  required_package_fields:
+    - name
+    - footprint
+    - confidence
+  required_package_numeric_fields:
+    - pin_count
+    - body_length_mm
+    - body_width_mm
+  qualified_lifecycle_status_values:
+    - active
+    - mature
+    - new_designs
+  require_assembly_stock: true
+  require_package_evidence_ids: true
+  evidence_kind_by_role:
+    inventory: supplier_snapshot
+    pricing: supplier_snapshot
+    lifecycle: manufacturer_datasheet
+    assembly: assembly_snapshot
+  package_confidence_scores:
+    manufacturer_documented: 1.0
+    supplier_documented: 0.8
+    library_only: 0.4
+    unknown: 0.0
+  assembly_library_class_scores:
+    basic: 1.0
+    preferred: 1.0
+    extended: 0.6
+    standard: 0.8
+    unknown: 0.0
+
+evidence:
+  required_kinds:
+    - manufacturer_datasheet
+    - supplier_snapshot
+  pcba_required_kinds:
+    - assembly_snapshot
+  freshness_kinds:
+    - supplier_snapshot
+    - assembly_snapshot
+  require_local_file: true
+  require_sha256: true
+  require_source_url: true
+  require_distinct_raw_evidence_files: true
+  require_capture_metadata: true
+  required_capture_fields:
+    - capture_method
+    - final_url
+    - media_type
+    - byte_size
+  capture_methods:
+    - direct-http
+    - provider-api
+    - browser-mcp
+  textual_media_types:
+    - application/json
+    - text/html
+    - text/plain
+  production_media_types:
+    manufacturer-datasheet:
+      - application/pdf
+      - text/html
+    supplier-snapshot:
+      - application/json
+      - text/html
+    assembly-snapshot:
+      - application/json
+      - text/html
+      - image/png
+  fixture_media_types:
+    - application/json
+    - text/plain
+  minimum_file_bytes: 64
+  fixture_profile: benchmark-fixture
+  role_assertion_fields:
+    inventory:
+      - in_stock
+      - moq
+      - order_multiple
+      - observed_at
+    pricing:
+      - currency
+      - unit_price
+      - price_breaks
+    lifecycle:
+      - status
+    assembly:
+      - provider_id
+      - supported
+      - in_stock
+      - library_class
+      - observed_at
+  package_assertion_fields:
+    - name
+    - pin_count
+  supplier_kinds:
+    - supplier_snapshot
+    - assembly_snapshot
+  identity_assertions:
+    manufacturer_datasheet:
+      - manufacturer
+      - mpn
+    supplier_snapshot:
+      - manufacturer
+      - mpn
+      - supplier_part
+    assembly_snapshot:
+      - supplier_part
+  forbidden_url_hosts:
+    - example.com
+    - example.org
+    - example.net
+    - localhost
+  forbidden_identity_patterns:
+    - "(?i)(^|[^a-z0-9])(example|fixture|dummy|fake|placeholder|todo|tbd|unknown)([^a-z0-9]|$)"
+
+ranking:
+  score_scale: 100.0
+  stock_ratio_cap: 10.0
+  weights:
+    stock_margin: 0.35
+    assembly_class: 0.20
+    landed_cost: 0.15
+    evidence: 0.15
+    package_confidence: 0.15
+
+cost_budget:
+  production_status: constrained
+  mvp_statuses:
+    - constrained
+    - unbounded-mvp
+  required_fields:
+    - status
+    - source_intake_revision
+    - currency
+    - quantity_basis
+    - maximum_component_cost_per_board
+    - maximum_component_order_total
+    - maximum_order_total
+    - estimate_lines
+    - allocation_rationale
+  required_estimate_line_fields:
+    - id
+    - category
+    - amount
+    - basis
+    - source
+    - confidence
+  estimate_line_bases:
+    - batch
+  confidence_values:
+    - quoted
+    - current-estimate
+    - conservative-allowance
+  minimum_amount: 0
+  maximum_amount: 1000000000
+
+artifact_rules:
+  require_under_project_artifacts: true
+  candidate_path_field: sourcing.artifacts.candidates
+  ranking_path_field: sourcing.artifacts.ranking
+  part_lock_path_field: sourcing.artifacts.part_lock
+
+downstream_invalid_status_values:
+  - invalidated
+  - stale
+
+downstream_ready_status_values:
+  - ready
+  - verified
+
+downstream_binding:
+  schema_versions: [1]
+  required_manifest_fields:
+    - schema_version
+    - project_name
+    - part_lock_sha256
+    - generated_at
+    - bindings
+  required_binding_fields:
+    - ref
+    - requirement_id
+    - candidate_id
+    - symbol_library
+    - symbol_id
+    - footprint_library
+    - footprint
+    - source_footprint_candidate
+    - symbol_file_evidence
+    - footprint_file_evidence
+    - package_verification
+    - pinmap_evidence
+    - status
+  ready_binding_statuses:
+    - verified
+  verified_package_statuses:
+    - verified
+  pinmap_schema_versions: [1, 2]
+  pinmap_ready_statuses:
+    - verified
+  required_pinmap_fields:
+    - schema_version
+    - ref
+    - symbol_id
+    - footprint
+    - status
+    - source_evidence_ids
+    - source_evidence_sha256
+    - symbol_file_sha256
+    - footprint_file_sha256
+    - mappings
+  required_pinmap_mapping_fields:
+    - symbol_pin
+    - footprint_pad
+  require_same_symbol_pin_and_footprint_pad: true
+  pinmap_required_source_evidence_kinds:
+    - manufacturer-datasheet
+  component_fields:
+    symbol: symbol
+    footprint: footprint
+  library_file_evidence_required_fields:
+    - file
+    - sha256
+  library_file_rules:
+    symbol:
+      suffix: .kicad_sym
+      signature: "(kicad_symbol_lib"
+    footprint:
+      suffix: .kicad_mod
+      signature: "(footprint"
+
+component_sourcing_exemptions:
+  boolean_fields:
+    - assembly.dnp
+    - assembly.virtual
+    - dnp
+    - virtual
+  status_values:
+    - dnp
+    - virtual
+    - mechanical_only
+    - not_procured
+  ref_prefixes:
+    - H
+  footprint_tokens:
+    - MountingHole
+    - Fiducial

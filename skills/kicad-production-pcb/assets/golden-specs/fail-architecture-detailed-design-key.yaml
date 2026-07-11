@@ -1,0 +1,157 @@
+benchmark:
+  checks:
+    - script: architecture_gate.py
+      args: [--before-sourcing]
+      expected_exit: 1
+project:
+  name: generic_architecture_case
+  stage: local-mvp
+validation:
+  architecture:
+    required: true
+user_profile:
+  experience: beginner
+  input_style: use_case_only
+requirement_intake:
+  intake:
+    user_intent: Control an external low-risk device.
+    input_style: use_case_only
+    success_criteria: The external device responds to a control request.
+    system_boundary: Control is on the board and the device remains external.
+  safety_screening:
+    hazards: []
+  confirmation:
+    status: confirmed
+    confirmed_by: user
+    confirmed_revision: 1
+  decision:
+    current_target: local-mvp
+architecture:
+  revision: 1
+  source_intake_revision: 1
+  current_target: local-mvp
+  state: ready
+  summary: A protected power entry feeds a control block and an external interface.
+  practical_choices_confirmed: true
+  practical_choice_confirmation:
+    status: confirmed
+    confirmed_by: user
+    architecture_revision: 1
+    source_intake_revision: 1
+    architecture_sha256: da8f59b0b46074d69a0e35ae6cc9e8f5a30a1c0d6f2dda3b6aaf5d72179220d0
+    user_response_summary: Confirmed the practical architecture choices for this regression case.
+  technical_decision_owner: codex
+  outputs:
+    report_path: artifacts/golden/architecture/generic_architecture_case/architecture.md
+  blocks:
+    - id: POWER_IN
+      category: power_entry
+      role: Receive external power.
+      scope: onboard
+      power_domains: [LOGIC_POWER]
+      required: true
+      selection_constraints:
+        - {id: POWER_IN_CAPABILITY, kind: function, statement: "Provide the declared power_entry block capability.", required: true, required_before: component-sourcing}
+    - id: CONTROL_CORE
+      category: controller
+      role: Run control behavior.
+      scope: onboard
+      power_domains: [LOGIC_POWER]
+      required: true
+      selection_constraints:
+        - {id: CONTROL_CORE_CAPABILITY, kind: function, statement: "Provide the declared controller block capability.", required: true, required_before: component-sourcing}
+      footprint: Detailed design does not belong in architecture.
+    - id: EXTERNAL_IO
+      category: interface
+      role: Expose the external interface.
+      scope: onboard
+      power_domains: [LOGIC_POWER]
+      required: true
+      selection_constraints:
+        - {id: EXTERNAL_IO_CAPABILITY, kind: function, statement: "Provide the declared interface block capability.", required: true, required_before: component-sourcing}
+    - id: EXTERNAL_DEVICE
+      category: external_device
+      role: Represent the off-board device.
+      scope: external
+      power_domains: []
+      required: true
+  block_edges:
+    - {id: EDGE_POWER_CONTROL, from: POWER_IN, to: CONTROL_CORE, kind: power, direction: source_to_sink}
+    - {id: EDGE_POWER_IO, from: POWER_IN, to: EXTERNAL_IO, kind: power, direction: source_to_sink}
+    - {id: EDGE_CONTROL_IO, from: CONTROL_CORE, to: EXTERNAL_IO, kind: data, direction: bidirectional}
+    - {id: EDGE_IO_EXTERNAL, from: EXTERNAL_IO, to: EXTERNAL_DEVICE, kind: data, direction: bidirectional}
+  power_domains:
+    - id: LOGIC_POWER
+      source_block: POWER_IN
+      consumer_blocks: [CONTROL_CORE, EXTERNAL_IO]
+      voltage_class: regulated_low_voltage
+      current_class: low
+      sharing: dedicated
+      backfeed_policy: blocked
+      protection_intent: required
+      required_before: local-mvp
+  interfaces:
+    - id: EXTERNAL_LINK
+      from: EXTERNAL_IO
+      to: EXTERNAL_DEVICE
+      kind: data
+      direction: bidirectional
+      external: true
+      speed_class: low
+      voltage_domain: LOGIC_POWER
+      risk_tags: [external_cable, user_accessible]
+      required_before: local-mvp
+  external_connectors:
+    - id: CONNECTOR_EXTERNAL
+      block_id: EXTERNAL_IO
+      interface_ids: [EXTERNAL_LINK]
+      exposure: user_accessible
+      hot_plug: "no"
+      protection_intent: required
+      rationale: The interface leaves the board and is user accessible.
+      required_before: local-mvp
+  risk_paths:
+    - id: RISK_EXTERNAL_CABLE
+      kind: external_cable
+      block_ids: [EXTERNAL_IO, EXTERNAL_DEVICE]
+      interface_ids: [EXTERNAL_LINK]
+      power_domain_ids: []
+      connector_ids: [CONNECTOR_EXTERNAL]
+      reason: The signal crosses the board boundary.
+      constraints:
+        - Keep boundary protection close to the connector.
+      required_before: local-mvp
+  protection_intents:
+    - id: PROTECT_POWER
+      boundary_id: LOGIC_POWER
+      threats: [overcurrent, reverse_polarity]
+      disposition: required
+      strategy_classes: [current_limit, polarity_control]
+      rationale: Protect the power entry.
+      required_before: local-mvp
+    - id: PROTECT_EXTERNAL
+      boundary_id: CONNECTOR_EXTERNAL
+      threats: [electrostatic_discharge]
+      disposition: required
+      strategy_classes: [clamp]
+      rationale: Protect the user-accessible interface.
+      required_before: local-mvp
+  failure_states:
+    - id: FAIL_EXTERNAL_DISCONNECT
+      trigger: External device is disconnected.
+      affected_blocks: [EXTERNAL_IO, CONTROL_CORE]
+      safe_state: Keep outputs inactive and continue reporting status.
+      required_before: local-mvp
+  test_and_debug:
+    - id: TEST_CONTROL
+      kind: programming
+      target_blocks: [CONTROL_CORE]
+      disposition: required
+      rationale: The control block needs a recovery path.
+      required_before: local-mvp
+  requirement_coverage:
+    - {requirement_path: intake.user_intent, block_ids: [CONTROL_CORE, EXTERNAL_IO], rationale: These blocks implement the requested behavior.}
+    - {requirement_path: intake.success_criteria, block_ids: [CONTROL_CORE, EXTERNAL_DEVICE], rationale: These blocks produce the observable result.}
+    - {requirement_path: intake.system_boundary, block_ids: [EXTERNAL_IO, EXTERNAL_DEVICE], rationale: These blocks define the board boundary.}
+  hazard_coverage: []
+  open_decisions: []

@@ -1,0 +1,70 @@
+benchmark:
+  checks:
+    - script: requirement_intake_gate.py
+      args: [--before-generation]
+      expected_exit: 1
+project:
+  stage: local-mvp
+requirement_intake:
+  intake:
+    project_name: unconfirmed_beginner_board
+    user_intent: Build a low-risk indoor prototype.
+    input_style: use_case_only
+    use_environment: Indoor bench.
+    connected_devices: One external device.
+    power_source: External low-voltage adapter.
+    size_or_mechanical: No known limit.
+    manufacturing_intent: Local MVP first.
+    success_criteria: The external device responds.
+    system_boundary: The board controls an external device.
+    failure_consequence: Prototype stops without a known safety hazard.
+    desired_end_target: local-mvp
+  safety_screening:
+    level: standard
+    hazards: []
+    rationale: Low-voltage indoor use.
+    blocks_automatic_assumptions: false
+  evidence_inputs:
+    available: []
+    requested: []
+  beginner:
+    input_style: use_case_only
+    question_strategy: practical_minimum
+    round: 2
+    max_rounds: 2
+    max_questions: 5
+    resolution_mode: awaiting_confirmation
+    questions: []
+    deferred_professional_topics:
+      - Final production evidence.
+  missing_information:
+    must_ask_now: []
+    can_defer: []
+    blocks_mvp: []
+    blocks_production:
+      - Final production evidence.
+    blocks_order_ready:
+      - External manufacturing review evidence.
+  safe_assumptions:
+    - id: safe-unconfirmed-mvp
+      assumption: Keep the intended result at local MVP.
+      reason: Professional details are deferred.
+      risk: It is not production-ready.
+      stage_allowed: local-mvp
+  unsafe_assumptions:
+    - id: unsafe-unconfirmed-production
+      unknown: Final production details.
+      why_not_guess: They affect manufacturing release.
+      required_before: production-package
+  confirmation:
+    status: pending
+    confirmed_by: none
+    intake_revision: 2
+    confirmed_revision: 0
+    user_response_summary: Awaiting explicit user confirmation.
+  decision:
+    current_target: requirements-only
+    can_create_spec: false
+    can_generate_kicad: false
+    can_run_erc_drc: false
+    next_action: Ask the user to confirm the intake.

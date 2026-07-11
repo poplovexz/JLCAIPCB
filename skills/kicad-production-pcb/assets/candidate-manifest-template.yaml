@@ -1,0 +1,104 @@
+schema_version: 1
+project_name: TODO
+architecture_sha256: TODO
+sourcing_context_sha256: TODO
+created_at: TODO_ISO8601
+batches:
+  - requirement_id: TODO_REQUIREMENT_ID
+    search:
+      rounds: 1
+      stop_reason: qualified_candidates_found
+      queries:
+        - provider_id: supplier
+          query: TODO
+          captured_at: TODO_ISO8601
+    candidates:
+      - id: TODO_CANDIDATE_ID
+        manufacturer: TODO
+        mpn: TODO
+        supplier:
+          provider_id: supplier
+          part_number: TODO
+          source_url: TODO
+        package:
+          name: TODO
+          footprint: TODO
+          pin_count: 1
+          body_length_mm: 1
+          body_width_mm: 1
+          confidence: supplier_documented
+          evidence_ids: [DATASHEET_EVIDENCE, SUPPLIER_EVIDENCE]
+        inventory:
+          in_stock: 0
+          moq: 1
+          order_multiple: 1
+          observed_at: TODO_ISO8601
+          evidence_id: SUPPLIER_EVIDENCE
+        assembly:
+          provider_id: assembler
+          supported: false
+          in_stock: 0
+          library_class: unknown
+          observed_at: TODO_ISO8601
+          evidence_id: ASSEMBLY_EVIDENCE
+        pricing:
+          currency: TODO
+          unit_price: 0
+          evidence_id: SUPPLIER_EVIDENCE
+        lifecycle:
+          status: TODO
+          evidence_id: DATASHEET_EVIDENCE
+        capabilities:
+          TODO_ATTRIBUTE:
+            value: TODO
+            unit: TODO
+            evidence_ids: [DATASHEET_EVIDENCE]
+        evidence:
+          - id: DATASHEET_EVIDENCE
+            kind: manufacturer_datasheet
+            url: TODO
+            file: artifacts/sourcing/TODO_PROJECT/evidence/TODO_DATASHEET
+            sha256: TODO
+            captured_at: TODO_ISO8601
+            capture_method: direct-http
+            final_url: TODO
+            media_type: application/pdf
+            byte_size: 0
+            assertions:
+              manufacturer: TODO
+              mpn: TODO
+              package: {name: TODO, pin_count: 1}
+              lifecycle: {status: TODO}
+              capabilities: {TODO_ATTRIBUTE: TODO}
+          - id: SUPPLIER_EVIDENCE
+            kind: supplier_snapshot
+            provider_id: supplier
+            url: TODO
+            file: artifacts/sourcing/TODO_PROJECT/evidence/TODO_SUPPLIER_SNAPSHOT
+            sha256: TODO
+            captured_at: TODO_ISO8601
+            capture_method: provider-api
+            final_url: TODO
+            media_type: application/json
+            byte_size: 0
+            assertions:
+              manufacturer: TODO
+              mpn: TODO
+              supplier_part: TODO
+              package: {name: TODO, pin_count: 1}
+              inventory: {in_stock: 0, moq: 1, order_multiple: 1, observed_at: TODO_ISO8601}
+              pricing: {currency: TODO, unit_price: 0}
+          - id: ASSEMBLY_EVIDENCE
+            kind: assembly_snapshot
+            provider_id: assembler
+            url: TODO
+            file: artifacts/sourcing/TODO_PROJECT/evidence/TODO_ASSEMBLY_SNAPSHOT
+            sha256: TODO
+            captured_at: TODO_ISO8601
+            capture_method: browser-mcp
+            final_url: TODO
+            media_type: text/html
+            byte_size: 0
+            assertions:
+              supplier_part: TODO
+              assembly: {provider_id: assembler, supported: false, in_stock: 0, library_class: unknown, observed_at: TODO_ISO8601}

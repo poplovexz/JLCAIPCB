@@ -1,0 +1,239 @@
+schema_version: 1
+project_name: pass_part_selection_basic
+locked_at: '2026-07-10T12:00:00Z'
+architecture_sha256: e6f86a6813a44b0c3be5ceeecc5e4708878dcb869df75130fb10885730251d90
+sourcing_context_sha256: 71214e8befae0009d3649a33ba4a310dbb8c45ae9395bb5bdf1a8343df1f6ac4
+candidate_manifest:
+  path: assets/golden-sourcing/pass_part_selection_basic/candidates.yaml
+  sha256: 68d15a7af2763e0797e7e30435c8a3ddc4b8668f8dbda81b01edc0134612d39f
+ranking:
+  path: assets/golden-sourcing/pass_part_selection_basic/ranking.yaml
+  sha256: cf4448e499f35d09e9cdc92a0a26d59421ea748ff8f97a3d87451763fcac4fd2
+selected_set:
+  compatibility:
+  - id: COMPAT_POWER_CONTROL
+    passed: true
+    reason: ''
+  - id: COMPAT_POWER_INTERFACE
+    passed: true
+    reason: ''
+  - id: COMPAT_CONTROL_INTERFACE
+    passed: true
+    reason: ''
+  - id: COMPAT_EXTERNAL_BOUNDARY
+    passed: true
+    reason: ''
+  component_order_total: 104.75
+  component_cost_per_board: 10.475
+  non_component_estimate_total: 80.0
+  estimated_order_total: 184.75
+  currency: CNY
+  moq_waste_quantity: 8
+selections:
+- requirement_id: CONTROL_PRIMARY
+  candidate_id: CONTROL_CANDIDATE_A
+  component_refs:
+  - U1
+  quantity_per_board: 1
+  disposition: pcba
+  manufacturer: Reference Logic Co
+  mpn: RLX32-A1
+  supplier:
+    provider_id: primary_supplier
+    part_number: C910001
+    source_url: https://www.lcsc.com/product-detail/C910001.html
+  package:
+    name: QFN-32
+    footprint_candidate: Package_QFN:QFN-32-1EP_5x5mm_P0.5mm_EP3.1x3.1mm
+    pin_count: 32
+    body_length_mm: 5
+    body_width_mm: 5
+    confidence: supplier_documented
+  inventory:
+    in_stock: 5000
+    moq: 1
+    order_multiple: 1
+    observed_at: '2026-07-10T08:00:00Z'
+    evidence_id: CONTROL_SUPPLIER
+  pricing:
+    currency: CNY
+    unit_price: 8.2
+    evidence_id: CONTROL_SUPPLIER
+  lifecycle:
+    status: active
+    evidence_id: CONTROL_DATASHEET
+  assembly:
+    provider_id: primary_assembler
+    supported: true
+    in_stock: 4200
+    library_class: basic
+    observed_at: '2026-07-10T08:00:00Z'
+    evidence_id: CONTROL_ASSEMBLY
+  architecture_trace:
+    block_ids:
+    - CONTROL_CORE
+    constraint_ids:
+    - CONTROL_FUNCTION_CAPABILITY
+  datasheet_url: https://docs.reference-logic.test/RLX32-A1.pdf
+  evidence_sha256:
+    CONTROL_DATASHEET: 3e0f595266f0e09013f012157bb6926789c5ec8ba169a694ed285b9a0963ea91
+    CONTROL_SUPPLIER: fba3c022b18603627e11c35937d68e5e797050e840b25663fdb7ceea4fc30fb9
+    CONTROL_ASSEMBLY: 63e7e848f59c3a77afb9840a78fd90408839a7b6973ae3b372df528e20fd475d
+  evidence_records:
+  - id: CONTROL_DATASHEET
+    kind: manufacturer-datasheet
+    sha256: 3e0f595266f0e09013f012157bb6926789c5ec8ba169a694ed285b9a0963ea91
+    url: https://docs.reference-logic.test/RLX32-A1.pdf
+  - id: CONTROL_SUPPLIER
+    kind: supplier-snapshot
+    sha256: fba3c022b18603627e11c35937d68e5e797050e840b25663fdb7ceea4fc30fb9
+    url: https://www.lcsc.com/product-detail/C910001.html
+  - id: CONTROL_ASSEMBLY
+    kind: assembly-snapshot
+    sha256: 63e7e848f59c3a77afb9840a78fd90408839a7b6973ae3b372df528e20fd475d
+    url: https://jlcpcb.com/parts/componentSearch?searchTxt=C910001
+  score: 87.98
+  order_quantity: 11
+  needed_quantity: 11
+  moq_waste_quantity: 0
+  unit_price: 8.2
+  extended_cost: 90.2
+  qualified_alternates: []
+- requirement_id: EXTERNAL_CONNECTOR
+  candidate_id: EXTERNAL_CANDIDATE_A
+  component_refs:
+  - J1
+  quantity_per_board: 1
+  disposition: pcba
+  manufacturer: Reference Interconnect Co
+  mpn: RI04-A1
+  supplier:
+    provider_id: primary_supplier
+    part_number: C910002
+    source_url: https://www.lcsc.com/product-detail/C910002.html
+  package:
+    name: CONN-04
+    footprint_candidate: Connector_Generic:Conn_01x04
+    pin_count: 4
+    body_length_mm: 10
+    body_width_mm: 5
+    confidence: supplier_documented
+  inventory:
+    in_stock: 8000
+    moq: 5
+    order_multiple: 5
+    observed_at: '2026-07-10T08:00:00Z'
+    evidence_id: EXTERNAL_SUPPLIER
+  pricing:
+    currency: CNY
+    unit_price: 0.55
+    evidence_id: EXTERNAL_SUPPLIER
+  lifecycle:
+    status: active
+    evidence_id: EXTERNAL_DATASHEET
+  assembly:
+    provider_id: primary_assembler
+    supported: true
+    in_stock: 7000
+    library_class: basic
+    observed_at: '2026-07-10T08:00:00Z'
+    evidence_id: EXTERNAL_ASSEMBLY
+  architecture_trace:
+    block_ids:
+    - EXTERNAL_IO
+    constraint_ids:
+    - EXTERNAL_INTERFACE_CAPABILITY
+  datasheet_url: https://docs.reference-interconnect.test/RI04-A1.pdf
+  evidence_sha256:
+    EXTERNAL_DATASHEET: e0f450b28a9a85a7680be1b246f86b9f6ebf6edeeb1edd18cf26ca73573a0ada
+    EXTERNAL_SUPPLIER: 56a6bf4318a843c87b13525e96ff7f47298170b55d6555df8516b221b08170b5
+    EXTERNAL_ASSEMBLY: c37d9ae6b1804a0ff86d98be26b63309a401915800748991ad5daec921c6f551
+  evidence_records:
+  - id: EXTERNAL_DATASHEET
+    kind: manufacturer-datasheet
+    sha256: e0f450b28a9a85a7680be1b246f86b9f6ebf6edeeb1edd18cf26ca73573a0ada
+    url: https://docs.reference-interconnect.test/RI04-A1.pdf
+  - id: EXTERNAL_SUPPLIER
+    kind: supplier-snapshot
+    sha256: 56a6bf4318a843c87b13525e96ff7f47298170b55d6555df8516b221b08170b5
+    url: https://www.lcsc.com/product-detail/C910002.html
+  - id: EXTERNAL_ASSEMBLY
+    kind: assembly-snapshot
+    sha256: c37d9ae6b1804a0ff86d98be26b63309a401915800748991ad5daec921c6f551
+    url: https://jlcpcb.com/parts/componentSearch?searchTxt=C910002
+  score: 96.175
+  order_quantity: 15
+  needed_quantity: 11
+  moq_waste_quantity: 4
+  unit_price: 0.55
+  extended_cost: 8.25
+  qualified_alternates: []
+- requirement_id: POWER_CONNECTOR
+  candidate_id: POWER_CANDIDATE_A
+  component_refs:
+  - J2
+  quantity_per_board: 1
+  disposition: pcba
+  manufacturer: Reference Interconnect Co
+  mpn: RI02-P1
+  supplier:
+    provider_id: primary_supplier
+    part_number: C910003
+    source_url: https://www.lcsc.com/product-detail/C910003.html
+  package:
+    name: CONN-02
+    footprint_candidate: Connector_Generic:Conn_01x02
+    pin_count: 2
+    body_length_mm: 6
+    body_width_mm: 5
+    confidence: supplier_documented
+  inventory:
+    in_stock: 9000
+    moq: 5
+    order_multiple: 5
+    observed_at: '2026-07-10T08:00:00Z'
+    evidence_id: POWER_SUPPLIER
+  pricing:
+    currency: CNY
+    unit_price: 0.42
+    evidence_id: POWER_SUPPLIER
+  lifecycle:
+    status: active
+    evidence_id: POWER_DATASHEET
+  assembly:
+    provider_id: primary_assembler
+    supported: true
+    in_stock: 8500
+    library_class: basic
+    observed_at: '2026-07-10T08:00:00Z'
+    evidence_id: POWER_ASSEMBLY
+  architecture_trace:
+    block_ids:
+    - POWER_IN
+    constraint_ids:
+    - POWER_INPUT_CAPABILITY
+  datasheet_url: https://docs.reference-interconnect.test/RI02-P1.pdf
+  evidence_sha256:
+    POWER_DATASHEET: bf96930a35c340ab84eab286b0bfbdc287257ed2b45746f289762e77966d7edb
+    POWER_SUPPLIER: 1c73b3203cbb8c85b6ac08c0eb27d3ff30d22ab30dd47a7b7f73e7a1fb6ddd13
+    POWER_ASSEMBLY: 708fede5440fe9c024e190594c4e4bae42293eb29258b9c79e52ac6ddb194bad
+  evidence_records:
+  - id: POWER_DATASHEET
+    kind: manufacturer-datasheet
+    sha256: bf96930a35c340ab84eab286b0bfbdc287257ed2b45746f289762e77966d7edb
+    url: https://docs.reference-interconnect.test/RI02-P1.pdf
+  - id: POWER_SUPPLIER
+    kind: supplier-snapshot
+    sha256: 1c73b3203cbb8c85b6ac08c0eb27d3ff30d22ab30dd47a7b7f73e7a1fb6ddd13
+    url: https://www.lcsc.com/product-detail/C910003.html
+  - id: POWER_ASSEMBLY
+    kind: assembly-snapshot
+    sha256: 708fede5440fe9c024e190594c4e4bae42293eb29258b9c79e52ac6ddb194bad
+    url: https://jlcpcb.com/parts/componentSearch?searchTxt=C910003
+  score: 96.37
+  order_quantity: 15
+  needed_quantity: 11
+  moq_waste_quantity: 4
+  unit_price: 0.42
+  extended_cost: 6.3
+  qualified_alternates: []

@@ -1,0 +1,19 @@
+benchmark:
+  expected_exit: 1
+  checks:
+    - beginner_intake_check.py
+
+project:
+  name: fail_beginner_production_claim
+  stage: production-package
+
+user_profile:
+  experience: beginner
+  input_style: use_case_only
+  use_case: "I want a board from a usage scenario."
+
+assumption_profile:
+  level: conservative_beginner_mvp
+  production_claim_allowed: true
+  order_ready_allowed: true
+  professional_review_required: false

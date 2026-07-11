@@ -1,0 +1,11 @@
+schema_version: 1
+manifest_schema_version: 1
+required_project_stages: [production-package, production, release, fabrication, order-ready, order-ready-blocked]
+artifact_subdir: production-manifest
+manifest_filename: production-manifest.yaml
+required_gate_reports: [final-gate.json, jlcpcb-gate.json]
+required_manifest_files: [package, release]
+executor_dependencies:
+  - scripts/_pcb_skill_checks.py
+  - scripts/_package_binding_stage.py
+  - scripts/_local_validation.py

@@ -1,0 +1,145 @@
+benchmark:
+  expected_exit: 0
+  checks:
+    - spec_schema_check.py
+    - spec_net_graph_check.py
+    - connectivity_batch_check.py
+    - script: connectivity_batch_check.py
+      args: ["--generated"]
+  transaction_proposals:
+    - proposal: ../golden-proposals/add-input-filter.yaml
+      expected_exit: 0
+    - proposal: ../golden-proposals/forbidden-existing-component-update.yaml
+      expected_exit: 1
+
+project:
+  name: pass_minimal_load_path
+  root_dir: ../../../..
+  title: Minimal Load Path Golden Spec
+  output_dir: projects/pass_minimal_load_path
+  artifacts_dir: artifacts
+  kicad_major_required: 10
+  generated_by: codex-kicad-workflow
+  schematic_version: 20230121
+  pcb_page_size: A4
+
+kicad:
+  symbol_root: /usr/share/kicad/symbols
+  footprint_root: /usr/share/kicad/footprints
+
+board:
+  size_mm: {width: 30.0, height: 20.0}
+  origin_mm: {x: 100.0, y: 100.0}
+  layers: {copper: 2}
+  net_classes:
+    - name: Default
+      clearance_mm: 0.20
+      track_width_mm: 0.25
+      via_diameter_mm: 0.60
+      via_drill_mm: 0.30
+    - name: power
+      clearance_mm: 0.20
+      track_width_mm: 0.50
+      via_diameter_mm: 0.60
+      via_drill_mm: 0.30
+  fabrication:
+    min_track_width_mm: 0.20
+    default_signal_width_mm: 0.25
+    default_power_width_mm: 0.50
+    min_clearance_mm: 0.20
+    min_via_diameter_mm: 0.60
+    min_via_drill_mm: 0.30
+    silk_line_width_mm: 0.15
+    silk_text_size_mm: 1.0
+    silk_text_thickness_mm: 0.15
+    edge_cut_width_mm: 0.10
+
+schematic:
+  connectivity:
+    mode: net_labels
+  layout:
+    origin_x_mm: 40.64
+    origin_y_mm: 40.64
+    column_spacing_mm: 40.64
+    row_spacing_mm: 24.13
+    columns: 3
+    note_origin_x_mm: 25.4
+    note_origin_y_mm: 120.65
+    note_spacing_mm: 5.08
+    font_size_mm: 1.27
+    label_stub_mm: 5.08
+  property_offsets_mm:
+    reference_y: -2.54
+    value_y: 2.54
+    footprint_y: 5.08
+    datasheet_y: 7.62
+
+nets:
+  - {name: VIN, class: power}
+  - {name: LOAD_NODE, class: signal}
+  - {name: GND, class: power}
+
+components:
+  - ref: J1
+    value: INPUT
+    symbol: Connector_Generic:Conn_01x02
+    footprint: Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical
+    datasheet: TODO
+    status: golden
+    pads: {"1": VIN, "2": GND}
+    position_mm: {x: 105.0, y: 110.0, rotation: 0}
+  - ref: R1
+    value: LOAD_LIMIT
+    symbol: Device:R
+    footprint: Resistor_SMD:R_0603_1608Metric
+    datasheet: TODO
+    status: golden
+    pads: {"1": VIN, "2": LOAD_NODE}
+    position_mm: {x: 115.0, y: 110.0, rotation: 0}
+  - ref: D1
+    value: LOAD_INDICATOR
+    symbol: Device:LED
+    footprint: LED_SMD:LED_0603_1608Metric
+    datasheet: TODO
+    status: golden
+    pads: {"1": GND, "2": LOAD_NODE}
+    position_mm: {x: 125.0, y: 110.0, rotation: 180}
+
+routes:
+  - net: VIN
+    layer: F.Cu
+    width_mm: 0.50
+    from: {ref: J1, pad: "1"}
+    to: {ref: R1, pad: "1"}
+  - net: LOAD_NODE
+    layer: F.Cu
+    width_mm: 0.25
+    from: {ref: R1, pad: "2"}
+    to: {ref: D1, pad: "2"}
+  - net: GND
+    layer: F.Cu
+    width_mm: 0.50
+    from: {ref: J1, pad: "2"}
+    to: {ref: D1, pad: "1"}
+
+expected_net_graph:
+  nets:
+    VIN: {pins: ["J1.1", "R1.1"], exact: true}
+    LOAD_NODE: {pins: ["R1.2", "D1.2"], exact: true}
+    GND: {pins: ["J1.2", "D1.1"], exact: true}
+
+connectivity_batches:
+  - name: input_power
+    provided_nets: [VIN, GND]
+    required_nets: [VIN, GND]
+    components: [J1]
+    connections:
+      - {net: VIN, pins: ["J1.1", "R1.1"]}
+      - {net: GND, pins: ["J1.2", "D1.1"]}
+  - name: load_path
+    upstream_nets: [VIN, GND]
+    provided_nets: [LOAD_NODE]
+    required_nets: [LOAD_NODE]
+    components: [R1, D1]
+    connections:
+      - {net: LOAD_NODE, pins: ["R1.2", "D1.2"]}

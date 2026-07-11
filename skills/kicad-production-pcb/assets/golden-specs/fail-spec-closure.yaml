@@ -1,0 +1,19 @@
+benchmark:
+  expected_exit: 0
+  checks:
+    - script: spec_closure_check.py
+      expected_exit: 1
+
+project:
+  name: fail_spec_closure
+  output_dir: projects/fail_spec_closure
+  artifacts_dir: artifacts
+
+manufacturing:
+  production_ready: true
+
+nets:
+  - {name: VIN, class: power}
+
+todo:
+  - Confirm power input before production.

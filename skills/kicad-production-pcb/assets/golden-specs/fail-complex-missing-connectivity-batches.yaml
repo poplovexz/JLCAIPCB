@@ -1,0 +1,83 @@
+benchmark:
+  expected_exit: 0
+  expected_by_check:
+    spec_schema_check.py: 0
+    spec_net_graph_check.py: 0
+  checks:
+    - spec_schema_check.py
+    - spec_net_graph_check.py
+    - script: connectivity_batch_check.py
+      args: ["--auto-require"]
+      expected_exit: 1
+
+project:
+  name: fail_complex_missing_connectivity_batches
+  output_dir: projects/fail_complex_missing_connectivity_batches
+  artifacts_dir: artifacts
+  kicad_major_required: 10
+
+kicad:
+  symbol_root: /usr/share/kicad/symbols
+  footprint_root: /usr/share/kicad/footprints
+
+board:
+  size_mm: {width: 40.0, height: 25.0}
+  layers: {copper: 2}
+  fabrication:
+    min_track_width_mm: 0.20
+    default_signal_width_mm: 0.25
+    default_power_width_mm: 0.50
+    min_clearance_mm: 0.20
+    min_via_diameter_mm: 0.60
+    min_via_drill_mm: 0.30
+
+nets:
+  - {name: VIN, class: power}
+  - {name: +3V3, class: power}
+  - {name: IO_A, class: signal}
+  - {name: IO_B, class: signal}
+  - {name: GND, class: power}
+
+components:
+  - ref: J1
+    value: INPUT
+    symbol: Connector_Generic:Conn_01x02
+    footprint: Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical
+    pads: {"1": VIN, "2": GND}
+  - ref: U1
+    value: REG
+    symbol: Regulator_Linear:AMS1117-3.3
+    footprint: Package_TO_SOT_SMD:SOT-223-3_TabPin2
+    pads: {"1": GND, "2": +3V3, "3": VIN}
+  - ref: C1
+    value: 10uF
+    symbol: Device:C
+    footprint: Capacitor_SMD:C_0603_1608Metric
+    pads: {"1": VIN, "2": GND}
+  - ref: C2
+    value: 10uF
+    symbol: Device:C
+    footprint: Capacitor_SMD:C_0603_1608Metric
+    pads: {"1": +3V3, "2": GND}
+  - ref: J2
+    value: IO_A
+    symbol: Connector_Generic:Conn_01x02
+    footprint: Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical
+    pads: {"1": IO_A, "2": GND}
+  - ref: J3
+    value: IO_B
+    symbol: Connector_Generic:Conn_01x02
+    footprint: Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical
+    pads: {"1": IO_B, "2": GND}
+
+expected_net_graph:
+  nets:
+    VIN: {pins: ["J1.1", "U1.3", "C1.1"]}
+    +3V3: {pins: ["U1.2", "C2.1"]}
+    IO_A: {pins: ["J2.1"]}
+    IO_B: {pins: ["J3.1"]}
+    GND: {pins: ["J1.2", "U1.1", "C1.2", "C2.2", "J2.2", "J3.2"]}
+
+validation:
+  net_graph:
+    allow_single_pin_nets: [IO_A, IO_B]

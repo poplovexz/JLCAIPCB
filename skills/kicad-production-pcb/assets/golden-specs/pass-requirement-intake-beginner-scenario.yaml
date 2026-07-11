@@ -1,0 +1,122 @@
+benchmark:
+  checks:
+    - script: requirement_intake_gate.py
+intake:
+  project_name: beginner_use_case_board
+  user_intent: Build a board from a plain-language use case.
+  input_style: use_case_only
+  use_environment: Indoor prototype.
+  connected_devices: Several external devices, exact models unknown.
+  power_source: Unknown; choose a practical source during intake.
+  size_or_mechanical: No enclosure or mounting limit known.
+  manufacturing_intent: Factory assembly is the desired destination, but the current step is requirements only.
+  success_criteria: The connected devices respond as described by the user.
+  system_boundary: The board provides control and interfaces; external devices and their power remain outside the board.
+  failure_consequence: Prototype stops working without creating a known safety hazard.
+  desired_end_target: order-ready
+budget_intent:
+  status: unknown
+  scope: unknown
+  currency: CNY
+  target_amount: null
+  maximum_amount: null
+  quantity_basis: null
+  includes: [components, pcb-fabrication, assembly]
+  priority: balanced
+  user_statement: The user selected Not sure for the first prototype budget.
+  allow_mvp_without_limit: true
+safety_screening:
+  level: standard
+  hazards: []
+  rationale: The described indoor prototype has no elevated-risk use.
+  blocks_automatic_assumptions: false
+evidence_inputs:
+  available: []
+  requested:
+    - type: label_photo
+      reason: A label can identify an external device the user cannot name.
+      required_before: draft-spec
+beginner:
+  input_style: use_case_only
+  question_strategy: practical_minimum
+  round: 1
+  max_rounds: 2
+  max_questions: 5
+  resolution_mode: ask_user
+  questions:
+    - id: q-function
+      category: function
+      question: Which job is closest to what the board should do?
+      choices: [Control things, Sense things, Control and sense, Not sure]
+      recommended_choice: Control and sense
+      allow_unknown: true
+      reason: This decides the main functional blocks.
+      blocks: architecture
+    - id: q-quantity
+      category: quantity
+      question: How many external things may be connected at the same time?
+      choices: [One, Two to four, Five or more, Not sure]
+      recommended_choice: Two to four
+      allow_unknown: true
+      reason: This decides connector count and rough power planning.
+      blocks: architecture
+    - id: q-power
+      category: power_source
+      question: How would you prefer to power it?
+      choices: [USB, Battery, External adapter, Not sure]
+      recommended_choice: External adapter
+      allow_unknown: true
+      reason: This decides the first power architecture.
+      blocks: architecture
+    - id: q-manufacturing
+      category: manufacturing
+      question: Which first result do you want?
+      choices: [Hand-built prototype, Factory assembly later, Bare board only, Not sure]
+      recommended_choice: Hand-built prototype
+      allow_unknown: true
+      reason: This decides how early sourcing evidence is needed.
+      blocks: manufacturing
+    - id: q-budget
+      category: budget
+      question: What total price range feels acceptable for each assembled board?
+      choices: [Under 50 CNY, 50 to 150 CNY, Above 150 CNY, Not sure]
+      recommended_choice: 50 to 150 CNY
+      allow_unknown: true
+      reason: This lets later part selection stay inside a practical cost range.
+      blocks: production-package
+  deferred_professional_topics:
+    - Exact electrical ratings and connector capacity.
+    - Exact package and placement orientation.
+missing_information:
+  must_ask_now:
+    - Select the rough function, quantity, and power source.
+  can_defer:
+    - Exact component part numbers.
+  blocks_mvp: []
+  blocks_production:
+    - Exact electrical ratings and selected sourceable parts.
+  blocks_order_ready:
+    - External manufacturing review evidence.
+safe_assumptions:
+  - id: safe-local-mvp
+    assumption: Keep the first implementation at local MVP.
+    reason: The user supplied only a use case.
+    risk: It cannot be described as production-ready.
+    stage_allowed: local-mvp
+unsafe_assumptions:
+  - id: unsafe-production-ratings
+    unknown: Exact current, package, and production sourcing details.
+    why_not_guess: They control safety margins, footprints, and manufacturing evidence.
+    required_before: production-package
+confirmation:
+  status: pending
+  confirmed_by: none
+  intake_revision: 1
+  confirmed_revision: 0
+  user_response_summary: Awaiting user answers and confirmation.
+decision:
+  current_target: requirements-only
+  can_create_spec: false
+  can_generate_kicad: false
+  can_run_erc_drc: false
+  next_action: Ask the practical questions and request confirmation.
