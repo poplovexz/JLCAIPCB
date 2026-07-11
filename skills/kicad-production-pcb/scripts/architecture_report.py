@@ -113,7 +113,11 @@ def render_report(spec: dict[str, Any], spec_path: Path, policy: dict[str, Any])
         for constraint in constraints:
             lines.append("| " + " | ".join(cell(constraint.get(field, "")) for field in constraint_fields) + " |")
         lines.append("")
-    lines.append(f"Source spec: `{spec_path}`")
+    try:
+        source_spec = spec_path.resolve().relative_to(Path.cwd().resolve())
+    except ValueError:
+        source_spec = spec_path.resolve()
+    lines.append(f"Source spec: `{source_spec}`")
     lines.append("")
     return "\n".join(lines)
 
