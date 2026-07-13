@@ -16,6 +16,19 @@ This repository provides:
 
 JLCAIPCB is a workflow controller and evidence system. It keeps `specs.yaml` as the source of truth and rejects stale or incomplete downstream artifacts. It does not claim that ERC/DRC proves functional correctness, and it does not replace KiCad, Freerouting, laboratory testing, or manufacturer review.
 
+## From a User Request to a PCB
+
+The project starts from the user's plain-language description of what the board should do. Codex turns that description into a PCB through a gated process:
+
+1. Confirm function, power, interfaces, important parts, dimensions, manufacturing target, and safety constraints with the user.
+2. Convert the confirmed requirements into a machine-readable `specs.yaml`, block architecture, power/current budget, and sourcing constraints.
+3. Select and lock real components, symbols, footprints, pin mappings, and supplier evidence before generating hardware files.
+4. Freeze the approved Spec, then generate the real KiCad schematic and PCB instead of treating an AI sketch as the design source.
+5. Apply stackup, impedance, layout, routing, via, backdrill, ERC, and DRC gates; incomplete or stale evidence stops the flow.
+6. Export and verify Gerber, drill, BOM, placement, release manifests, and manufacturer review evidence for the requested fabrication stage.
+
+The current workflow supports policy-driven even copper-layer counts from 2 through 32, with automated 6–16 layer generation/DSN regression coverage. Detailed physical stackup, controlled-impedance evidence, blind/buried/microvias, backdrill outputs, and manufacturer capabilities are validated before a production or order-ready claim.
+
 ## Quick Install
 
 ```bash
