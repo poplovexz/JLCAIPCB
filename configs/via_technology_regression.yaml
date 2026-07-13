@@ -1,0 +1,71 @@
+schema_version: 1
+
+regression:
+  copper_layers: 6
+  via_diameter_mm: 0.6
+  via_drill_mm: 0.3
+  drill_export:
+    board_name: special_via_drill_regression
+    expected_artifacts:
+      - {id: blind_or_microvia, filename_regex: 'front-in1\.drl$', content_regex: 'TF\.FileFunction,Plated,1,2,Blind'}
+      - {id: buried, filename_regex: 'in1-in2\.drl$', content_regex: 'TF\.FileFunction,Plated,2,3,Buried'}
+      - {id: backdrill, filename_regex: 'Backdrills_Drill_1_3\.drl$', content_regex: 'TF\.FileFunction,NonPlated,1,3,Blind'}
+  cases:
+    - id: through
+      via_type: through
+      layers: [F.Cu, B.Cu]
+      backdrill: {mode: none}
+    - id: blind
+      via_type: blind
+      layers: [F.Cu, In1.Cu]
+      backdrill: {mode: none}
+    - id: buried
+      via_type: buried
+      layers: [In1.Cu, In2.Cu]
+      backdrill: {mode: none}
+    - id: microvia
+      via_type: microvia
+      layers: [F.Cu, In1.Cu]
+      backdrill: {mode: none}
+    - id: top_backdrill
+      via_type: through
+      layers: [F.Cu, B.Cu]
+      backdrill:
+        mode: top
+        top: {stop_layer: In2.Cu, drill_mm: 0.4}
+  invalid_cases:
+    - id: through_partial_span
+      via_type: through
+      layers: [F.Cu, In1.Cu]
+      backdrill: {mode: none}
+    - id: disabled_layer
+      via_type: blind
+      layers: [F.Cu, In14.Cu]
+      backdrill: {mode: none}
+    - id: microvia_nonadjacent
+      via_type: microvia
+      layers: [F.Cu, In2.Cu]
+      backdrill: {mode: none}
+    - id: buried_outer_endpoint
+      via_type: buried
+      layers: [F.Cu, In1.Cu]
+      backdrill: {mode: none}
+    - id: backdrill_outer_stop
+      via_type: through
+      layers: [F.Cu, B.Cu]
+      backdrill:
+        mode: top
+        top: {stop_layer: F.Cu, drill_mm: 0.4}
+    - id: backdrill_not_oversized
+      via_type: through
+      layers: [F.Cu, B.Cu]
+      backdrill:
+        mode: top
+        top: {stop_layer: In2.Cu, drill_mm: 0.3}
+    - id: backdrill_crossed_stops
+      via_type: through
+      layers: [F.Cu, B.Cu]
+      backdrill:
+        mode: both
+        top: {stop_layer: In3.Cu, drill_mm: 0.4}
+        bottom: {stop_layer: In2.Cu, drill_mm: 0.4}

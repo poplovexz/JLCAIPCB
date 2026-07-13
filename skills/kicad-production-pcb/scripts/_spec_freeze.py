@@ -463,6 +463,8 @@ def artifact_bindings(
         path_field = str(item.get("path_field", ""))
         raw_path = get_path(spec, path_field)
         if not path_field or not string_value(raw_path):
+            if item.get("optional") is True and path_field:
+                continue
             result.issue(f"Spec Freeze artifact {binding_id} requires {path_field or '<path_field>'}")
             continue
         path = resolve_from_root(raw_path, root)

@@ -109,6 +109,7 @@ Keep this file as the short orchestration layer. Load detailed references only w
 - Read `references/package-binding-stage.md` before importing or validating symbol semantics, datasheet pin maps, footprint pad geometry, package dimensions, placement origins, Pin 1/polarity, rotation offsets, bottom-side transforms, or BOM/CPL identity.
 - Read `references/layout-stage.md` before defining, generating, changing, reviewing, scoring, or accepting board outlines, mechanical anchors, placement batches, connector direction, regions, keepouts, copper zones, critical proximity/separation, high-current/high-speed/RF/return/thermal layout intent, or routing unlock evidence.
 - Read `references/routing-stage.md` before defining, generating, deleting, changing, scoring, importing, locking, or accepting PCB tracks, vias, routing batches, per-net constraints, route-lock artifacts, or any autorouting candidate.
+- Read `references/fabrication-capability-stage.md` before generating or approving multilayer physical stackups, controlled-impedance geometry/evidence, blind/buried/microvias, backdrill, or manufacturer capability evidence.
 - Read `references/local-validation-stage.md` before running, changing, reviewing, or accepting local ERC/DRC, unconnected, fabrication, package, release, final-gate, JLC production, or production-manifest evidence.
 - Read `references/external-dfm-stage.md` before opening manufacturer web DFM, importing browser evidence, or claiming order-ready.
 - Read `references/autoroute-input-validity.md` before deleting routes, exporting DSN, running Freerouting, or deciding whether Freerouting can repair a board.
@@ -168,10 +169,11 @@ Professional unknowns may be deferred only to a later target through matching st
 After architecture passes, read `references/supply-chain-first.md`. Do not enter KiCad until this sequence succeeds:
 
 1. Declare bounded `sourcing.context`, component roles, architecture-derived requirements, cross-part compatibility, cost allocation, and artifact paths; run `sourcing_context_check.py --require`.
-2. Collect bounded candidate batches and independent hashed capture evidence under `project.artifacts_dir`; run `candidate_batch_check.py --require`.
-3. Run `candidate_rank_check.py --require`; hard constraints, role coverage, compatibility, and aggregate cost fail before soft ranking.
-4. Dry-run and apply `part_lock_transaction.py`; all requirements lock together or none are written.
-5. Run `part_selection_check.py --require` before library work. After import/pin-map verification, apply `library_binding_transaction.py`, then require `part_selection_check.py --require --before-generation`.
+2. For JLCPCB assembly, use the `jlcpcb-search` MCP first: check `database_status`, refresh the catalog when stale, use `search_components` for bounded discovery, and call `get_component_details` for every shortlisted LCSC part. Save normalized tool inputs/results with timestamps and hashes under `project.artifacts_dir`. Use direct supplier/browser capture only when the MCP is unavailable or lacks a required assertion.
+3. Collect bounded candidate batches and independent hashed capture evidence under `project.artifacts_dir`; run `candidate_batch_check.py --require`.
+4. Run `candidate_rank_check.py --require`; hard constraints, role coverage, compatibility, and aggregate cost fail before soft ranking.
+5. Dry-run and apply `part_lock_transaction.py`; all requirements lock together or none are written.
+6. Run `part_selection_check.py --require` before library work. After import/pin-map verification, apply `library_binding_transaction.py`, then require `part_selection_check.py --require --before-generation`.
 
 The composite check reruns architecture, candidates, selected-set compatibility/cost, ranking/lock freshness, component bindings, and architecture trace. A changed part invalidates downstream library evidence. PASS proves bound timestamped evidence and deterministic selection, not reserved stock or web DFM acceptance.
 
@@ -336,7 +338,8 @@ For an existing repository:
    - `python3 <skill>/scripts/spec_closure_check.py specs/<project>.yaml`
    - `python3 <skill>/scripts/part_selection_check.py --before-generation specs/<project>.yaml`
    - `python3 <skill>/scripts/readiness_preflight.py specs/<project>.yaml`
-   - `python3 <skill>/scripts/verification_preflight.py specs/<project>.yaml`; production adds `--strict`.
+	   - `python3 <skill>/scripts/verification_preflight.py specs/<project>.yaml`; production adds `--strict`.
+	   - `python3 <skill>/scripts/fabrication_capability_gate.py --before-generation specs/<project>.yaml`; it is a no-op for untriggered legacy boards and fails closed when multilayer, controlled impedance, or special-via technology lacks current SHA-bound manufacturer evidence.
    - `python3 <skill>/scripts/spec_schema_check.py specs/<project>.yaml`; production adds `--production`.
    - `python3 <skill>/scripts/spec_net_graph_check.py --exact specs/<project>.yaml`
    - `python3 <skill>/scripts/connectivity_batch_check.py --auto-require --generated specs/<project>.yaml`. This fails when a real/complex/production-track spec needs batches but does not declare them; when batches exist, it creates disposable per-batch KiCad projects under the spec-derived artifacts directory, compares generated netlists, and removes passing temporary projects unless `--keep-temp` is explicitly used.
@@ -348,7 +351,7 @@ For an existing repository:
    - `python3 <skill>/scripts/power_budget_check.py --strict specs/<project>.yaml` after `power_domains` is populated.
    - `python3 <skill>/scripts/todo_blocker_check.py --production specs/<project>.yaml` before claiming production-ready or order-ready.
    - `python3 <skill>/scripts/todo_phase_report.py specs/<project>.yaml` after TODO evidence classification, to show which remaining items are current AI blockers and which are post-fabrication validation plan items.
-7. For declared SI/PI/EMC/thermal checks, run `python3 <skill>/scripts/verification_preflight.py specs/<project>.yaml`; use `--strict` only when a spec must declare all four risk areas. Passing this gate permits only `SI/PI/EMC/thermal risk precheck passed` language. Do not claim compliance, real signal integrity, real power integrity, EMC certification, or real temperature proof without simulation, lab, or measurement evidence.
+7. For declared SI/PI/EMC/thermal checks, run `python3 <skill>/scripts/verification_preflight.py specs/<project>.yaml`; use `--strict` only when a spec must declare all four risk areas. For multilayer, controlled-impedance, or special-via work, also pass `fabrication_capability_gate.py` using the detailed contract in `references/fabrication-capability-stage.md`. Passing the generic verification preflight alone permits only `SI/PI/EMC/thermal risk precheck passed` language; impedance claims require matching calculation evidence and manufacturer capability claims require matching manufacturer-source evidence.
 8. If schematic connectivity is in scope, do not edit the working spec directly. Create an additive proposal under a project-local proposals directory, run `python3 <skill>/scripts/spec_patch_check.py specs/<project>.yaml <proposal>.yaml`, then run `python3 <skill>/scripts/batch_transaction_runner.py specs/<project>.yaml <proposal>.yaml`; only after that passes may you run the same command with `--apply`. Use `spec_diff_guard.py` if a spec was changed outside the transaction runner.
 9. If schematic connectivity is in scope, run the Connectivity Batch Gate before generation and avoid one-wire-at-a-time debugging.
 10. If needed, run the Component Import Gate and update the spec with explicit local library mappings before generation.
@@ -385,6 +388,7 @@ Stop and report a blocked status instead of continuing when:
 - `part_selection_check.py` fails for production sourcing, role/compatibility/cost closure, or `--before-generation` library/pin-map binding. Fix the failed stage or downgrade to draft/local MVP.
 - `requirements_gate.py --strict`, `power_budget_check.py --strict`, or `todo_blocker_check.py --production` fails for a real/complex production claim.
 - `verification_preflight.py` fails for declared SI/PI/EMC/thermal risk prechecks.
+- `fabrication_capability_gate.py` fails because the physical stackup is incomplete, its thickness/layer order is inconsistent, controlled-impedance evidence does not match the exact stackup and geometry, a special-via process lacks a deliverable disposition, or manufacturer evidence is missing, stale, hash-mismatched, unsupported, or from an untrusted source.
 - A real/complex/production-track spec does not declare `connectivity_batches`, or a connectivity batch fails expected net graph comparison, has missing upstream/provided nets, or cannot be rolled back cleanly.
 - Component import is needed but the part number, package, source URL, or imported pin/footprint mapping cannot be verified.
 - `layout_stage_gate.py` fails, an unrouted layout contains tracks, placement batches are incomplete, a footprint leaves its permitted board/region, a non-waived Courtyard overlap exists, a keepout/zone is missing, a fixed/connector orientation is wrong, or layout evidence is stale before routing.
@@ -476,6 +480,7 @@ python3 <skill>/scripts/part_selection_check.py --require --before-generation sp
 python3 <skill>/scripts/spec_freeze_transaction.py --apply specs/<project>.yaml
 python3 <skill>/scripts/spec_freeze_check.py --before-generation specs/<project>.yaml
 python3 <skill>/scripts/spec_output_binding.py --check-release specs/<project>.yaml
+python3 <skill>/scripts/fabrication_capability_gate.py --before-generation specs/<project>.yaml
 python3 scripts/run_flow.py specs/<project>.yaml
 python3 scripts/kicad_check.py --strict-violations specs/<project>.yaml
 python3 scripts/jlcpcb_gate.py --production specs/<project>.yaml

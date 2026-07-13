@@ -14,6 +14,12 @@ from pathlib import Path
 
 import yaml
 
+from pcb_technology import (
+    inject_physical_stackup,
+    load_routing_stage_policy,
+    validate_copper_layer_count,
+)
+
 
 def load_spec(path: Path) -> dict:
     with path.open("r", encoding="utf-8") as handle:
@@ -83,12 +89,19 @@ def schematic_extra_symbol_ids(spec: dict) -> set[str]:
     }
 
 
+def electrical_components(spec: dict) -> list[dict]:
+    return [
+        component for component in spec["components"]
+        if component.get("electrical") is not False
+    ]
+
+
 def used_symbol_library_ids(spec: dict) -> set[str]:
-    return {str(component["symbol"]) for component in spec["components"]} | schematic_extra_symbol_ids(spec)
+    return {str(component["symbol"]) for component in electrical_components(spec)} | schematic_extra_symbol_ids(spec)
 
 
 def board_footprint_items(spec: dict) -> list[dict]:
-    return spec["components"] + spec.get("mechanical_footprints", [])
+    return electrical_components(spec) + spec.get("mechanical_footprints", [])
 
 
 def symbol_library_manifest(spec: dict) -> dict[str, str]:
@@ -180,8 +193,22 @@ def write_library_audit(spec: dict, output_dir: Path) -> None:
 
 
 def write_library_tables(spec: dict, output_dir: Path) -> None:
-    symbol_libs = symbol_library_manifest(spec)
-    footprint_libs = footprint_library_manifest(spec)
+    def project_uri(path: Path) -> str:
+        resolved = path.resolve()
+        try:
+            relative = resolved.relative_to(output_dir.resolve())
+            return "${KIPRJMOD}/" + relative.as_posix()
+        except ValueError:
+            return str(resolved)
+
+    symbol_libs = {
+        library: project_uri(symbol_library_path(spec, library))
+        for library in symbol_library_manifest(spec)
+    }
+    footprint_libs = {
+        library: project_uri(footprint_library_path(spec, library))
+        for library in footprint_library_manifest(spec)
+    }
 
     sym_lines = ["(sym_lib_table"]
     for library, library_path in symbol_libs.items():
@@ -198,6 +225,61 @@ def write_library_tables(spec: dict, output_dir: Path) -> None:
         )
     fp_lines.append(")")
     (output_dir / "fp-lib-table").write_text("\n".join(fp_lines) + "\n", encoding="utf-8")
+
+
+def write_custom_drc_rules(spec: dict, output_dir: Path) -> None:
+    path = output_dir / f"{spec['project']['name']}.kicad_dru"
+    rules = spec.get("board", {}).get("custom_drc_rules", [])
+    if not rules:
+        path.unlink(missing_ok=True)
+        return
+    allowed_constraints = {"hole_clearance", "physical_hole_clearance"}
+    known_refs = {str(item["ref"]) for item in board_footprint_items(spec)}
+    identifiers: set[str] = set()
+    lines = ["(version 1)", ""]
+    for rule in rules:
+        identifier = str(rule.get("id", ""))
+        if not re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]*", identifier) or identifier in identifiers:
+            raise SystemExit(f"Invalid or duplicate custom DRC rule id: {identifier}")
+        identifiers.add(identifier)
+        constraint = str(rule.get("constraint", ""))
+        if constraint not in allowed_constraints:
+            raise SystemExit(f"Unsupported custom DRC constraint for {identifier}: {constraint}")
+        minimum = rule.get("minimum_mm")
+        if not isinstance(minimum, (int, float)) or isinstance(minimum, bool) or float(minimum) <= 0:
+            raise SystemExit(f"custom DRC rule {identifier} minimum_mm must be positive")
+        refs = [str(ref) for ref in rule.get("within_refs", [])]
+        if not refs or any(ref not in known_refs for ref in refs):
+            raise SystemExit(f"custom DRC rule {identifier} requires known within_refs")
+        if not str(rule.get("rationale", "")).strip() or not rule.get("evidence_refs"):
+            raise SystemExit(f"custom DRC rule {identifier} requires rationale and evidence_refs")
+        conditions = [f"(A.Reference == '{ref}' && B.Reference == '{ref}')" for ref in refs]
+        lines.extend([
+            f'(rule "{identifier}"',
+            f'    (condition "{" || ".join(conditions)}")',
+            f"    (constraint {constraint} (min {float(minimum):g}mm))",
+            ")",
+            "",
+        ])
+    path.write_text("\n".join(lines), encoding="utf-8")
+
+
+def apply_board_silkscreen_policy(footprint, pcbnew, spec: dict) -> bool:
+    policy = spec.get("board", {}).get("silkscreen", {})
+    mode = str(policy.get("mode", "footprint-default"))
+    if mode == "footprint-default":
+        return False
+    if mode != "assembly-data-only" or not str(policy.get("rationale", "")).strip():
+        raise SystemExit("board.silkscreen requires a supported mode and rationale")
+    if policy.get("hide_references") is True:
+        footprint.Reference().SetVisible(False)
+    if policy.get("hide_values") is True:
+        footprint.Value().SetVisible(False)
+    if policy.get("omit_footprint_graphics") is True:
+        for item in list(footprint.GraphicalItems()):
+            if isinstance(item, pcbnew.PCB_SHAPE) and item.GetLayer() in {pcbnew.F_SilkS, pcbnew.B_SilkS}:
+                item.SetLayer(pcbnew.B_Fab if item.GetLayer() == pcbnew.B_SilkS else pcbnew.F_Fab)
+    return True
 
 
 def build_project_file(spec: dict, output_dir: Path) -> None:
@@ -318,6 +400,22 @@ def add_layout_zones(board, pcbnew, spec: dict, net_info_by_name: dict) -> None:
         zone.SetLayer(board.GetLayerID(str(item["layer"])))
         zone.SetNet(net_info_by_name[str(item["net"])])
         zone.AddPolygon(polygon_chain(pcbnew, item["polygon"]))
+        island_mode = item.get("island_removal_mode")
+        if island_mode is not None:
+            island_modes = {
+                "always": pcbnew.ISLAND_REMOVAL_MODE_ALWAYS,
+                "area": pcbnew.ISLAND_REMOVAL_MODE_AREA,
+                "never": pcbnew.ISLAND_REMOVAL_MODE_NEVER,
+            }
+            if island_mode not in island_modes:
+                raise SystemExit(f"Unsupported island removal mode for zone {item['id']}: {island_mode}")
+            zone.SetIslandRemovalMode(island_modes[island_mode])
+        if "min_island_area_mm2" in item:
+            area_mm2 = float(item["min_island_area_mm2"])
+            if area_mm2 < 0:
+                raise SystemExit(f"Zone {item['id']} min_island_area_mm2 must be non-negative")
+            internal_units_per_mm = pcbnew.FromMM(1.0)
+            zone.SetMinIslandArea(round(area_mm2 * internal_units_per_mm * internal_units_per_mm))
         board.Add(zone)
 
     for item in spec.get("layout", {}).get("keepouts", []):
@@ -367,6 +465,152 @@ def add_routes(board, pcbnew, routes: list[dict], footprints_by_ref: dict, net_i
             board.Add(track)
 
 
+def normalized_policy_key(value) -> str:
+    return str(value or "").strip().lower().replace("_", "-")
+
+
+def configured_policy_key(value, choices, label: str) -> str:
+    wanted = normalized_policy_key(value)
+    matches = [str(choice) for choice in choices if normalized_policy_key(choice) == wanted]
+    if len(matches) != 1:
+        raise SystemExit(f"{label} is unsupported by the trusted routing-stage policy: {value}")
+    return matches[0]
+
+
+def enabled_copper_layers(board) -> dict[str, int]:
+    return {
+        str(board.GetLayerName(layer)): int(layer)
+        for layer in board.GetEnabledLayers().CuStack()
+    }
+
+
+def configure_locked_via(board, pcbnew, item, record: dict, routing_policy: dict) -> None:
+    enabled_layers = enabled_copper_layers(board)
+    layers = record.get("layers")
+    if (
+        not isinstance(layers, list)
+        or len(layers) != 2
+        or len(set(map(str, layers))) != 2
+        or any(str(layer) not in enabled_layers for layer in layers)
+    ):
+        raise SystemExit("Routing lock via layers must identify two distinct enabled copper layers")
+    layer_names = [str(layer) for layer in layers]
+    layer_positions = [list(enabled_layers).index(layer) for layer in layer_names]
+    if layer_positions != sorted(layer_positions):
+        raise SystemExit("Routing lock via layers must be ordered from top to bottom")
+
+    via_policy = routing_policy.get("via_types")
+    definitions = via_policy.get("definitions") if isinstance(via_policy, dict) else None
+    if not isinstance(definitions, dict) or not definitions:
+        raise SystemExit("Trusted routing-stage policy has no via type definitions")
+    raw_via_type = record.get("via_type", via_policy.get("default_type"))
+    via_type = configured_policy_key(raw_via_type, definitions, "Routing lock via_type")
+    definition = definitions.get(via_type)
+    enum_name = definition.get("pcbnew_enum") if isinstance(definition, dict) else None
+    via_enum = getattr(pcbnew, str(enum_name), None) if isinstance(enum_name, str) else None
+    if via_enum is None:
+        raise SystemExit(f"Routing lock via_type {via_type} has no available pcbnew enum")
+    if definition.get("full_span_required") is True and layer_positions != [0, len(enabled_layers) - 1]:
+        raise SystemExit(f"Routing lock via_type {via_type} requires the full copper stack")
+    expected_outer_count = definition.get("outer_endpoint_count")
+    if isinstance(expected_outer_count, int) and not isinstance(expected_outer_count, bool):
+        actual_outer_count = sum(
+            position in {0, len(enabled_layers) - 1} for position in layer_positions
+        )
+        if actual_outer_count != expected_outer_count:
+            raise SystemExit(f"Routing lock via_type {via_type} has invalid outer-layer endpoints")
+    if definition.get("adjacent_layers_required") is True and layer_positions[1] - layer_positions[0] != 1:
+        raise SystemExit(f"Routing lock via_type {via_type} requires adjacent copper layers")
+
+    item.SetViaType(via_enum)
+    item.SetLayerPair(enabled_layers[layer_names[0]], enabled_layers[layer_names[1]])
+    actual_layers = [str(board.GetLayerName(item.TopLayer())), str(board.GetLayerName(item.BottomLayer()))]
+    if int(item.GetViaType()) != int(via_enum) or actual_layers != layer_names:
+        raise SystemExit(
+            f"KiCad did not preserve routing lock via technology {via_type} on {layer_names}"
+        )
+
+    backdrill_policy = routing_policy.get("backdrill")
+    if not isinstance(backdrill_policy, dict):
+        raise SystemExit("Trusted routing-stage policy has no backdrill definition")
+    mode_enums = backdrill_policy.get("mode_enums")
+    mode_sides = backdrill_policy.get("mode_sides")
+    if not isinstance(mode_enums, dict) or not isinstance(mode_sides, dict):
+        raise SystemExit("Trusted routing-stage policy has incomplete backdrill definitions")
+    backdrill = record.get("backdrill", {})
+    if not isinstance(backdrill, dict):
+        raise SystemExit("Routing lock via backdrill must be a mapping")
+    raw_mode = backdrill.get("mode", backdrill_policy.get("default_mode"))
+    mode = configured_policy_key(raw_mode, mode_enums, "Routing lock backdrill.mode")
+    if mode not in mode_sides or not isinstance(mode_sides[mode], list):
+        raise SystemExit(f"Trusted routing-stage policy has no side mapping for backdrill mode {mode}")
+    backdrill_enum_name = mode_enums.get(mode)
+    backdrill_enum = (
+        getattr(pcbnew, str(backdrill_enum_name), None)
+        if isinstance(backdrill_enum_name, str)
+        else None
+    )
+    if backdrill_enum is None:
+        raise SystemExit(f"Routing lock backdrill mode {mode} has no available pcbnew enum")
+    active_sides = [str(side) for side in mode_sides[mode]]
+    if active_sides and definition.get("backdrill_allowed") is not True:
+        raise SystemExit(f"Routing lock via_type {via_type} does not allow backdrill")
+    item.SetBackdrillMode(backdrill_enum)
+    validation_rules = backdrill_policy.get("validation")
+    if not isinstance(validation_rules, dict):
+        raise SystemExit("Trusted routing-stage policy has no backdrill validation rules")
+    stop_positions: dict[str, int] = {}
+    for side in active_sides:
+        detail = backdrill.get(side)
+        if not isinstance(detail, dict):
+            raise SystemExit(f"Routing lock backdrill.{side} must be a mapping")
+        stop_layer = str(detail.get("stop_layer", ""))
+        drill_mm = detail.get("drill_mm")
+        if stop_layer not in enabled_layers:
+            raise SystemExit(f"Routing lock backdrill.{side}.stop_layer is not enabled copper")
+        stop_position = list(enabled_layers).index(stop_layer)
+        stop_positions[side] = stop_position
+        if (
+            validation_rules.get("require_stop_between_via_endpoints") is True
+            and not layer_positions[0] < stop_position < layer_positions[1]
+        ):
+            raise SystemExit(
+                f"Routing lock backdrill.{side}.stop_layer must be between the via endpoints"
+            )
+        if (
+            not isinstance(drill_mm, (int, float))
+            or isinstance(drill_mm, bool)
+            or float(drill_mm) <= 0
+        ):
+            raise SystemExit(f"Routing lock backdrill.{side}.drill_mm must be positive numeric")
+        if (
+            validation_rules.get("require_drill_larger_than_via_drill") is True
+            and mm(drill_mm) <= int(item.GetDrillValue())
+        ):
+            raise SystemExit(
+                f"Routing lock backdrill.{side}.drill_mm must exceed the via drill"
+            )
+        suffix = side[:1].upper() + side[1:]
+        layer_setter = getattr(item, f"Set{suffix}BackdrillLayer", None)
+        size_setter = getattr(item, f"Set{suffix}BackdrillSize", None)
+        layer_getter = getattr(item, f"Get{suffix}BackdrillLayer", None)
+        size_getter = getattr(item, f"Get{suffix}BackdrillSize", None)
+        if not all(callable(method) for method in [layer_setter, size_setter, layer_getter, size_getter]):
+            raise SystemExit(f"KiCad has no routing lock backdrill API for side {side}")
+        layer_setter(enabled_layers[stop_layer])
+        size_setter(mm(drill_mm))
+        if int(layer_getter()) != enabled_layers[stop_layer] or int(size_getter()) != mm(drill_mm):
+            raise SystemExit(f"KiCad did not preserve routing lock backdrill.{side}")
+    if int(item.GetBackdrillMode()) != int(backdrill_enum):
+        raise SystemExit(f"KiCad did not preserve routing lock backdrill mode {mode}")
+    if (
+        validation_rules.get("require_ordered_dual_stops") is True
+        and {"top", "bottom"} <= set(stop_positions)
+        and stop_positions["top"] >= stop_positions["bottom"]
+    ):
+        raise SystemExit("Routing lock top/bottom backdrill stop layers overlap or cross")
+
+
 def add_route_lock(board, pcbnew, spec: dict, net_info_by_name: dict, root: Path) -> bool:
     lock = spec.get("routing", {}).get("route_lock", {})
     artifact = lock.get("artifact", {}) if isinstance(lock, dict) else {}
@@ -381,6 +625,11 @@ def add_route_lock(board, pcbnew, spec: dict, net_info_by_name: dict, root: Path
     data = json.loads(payload)
     if data.get("project_name") != spec["project"]["name"] or data.get("routing_revision") != spec["routing"].get("revision"):
         raise SystemExit("Routing lock artifact project/revision mismatch")
+    try:
+        routing_policy = load_routing_stage_policy()
+    except (OSError, ValueError, yaml.YAMLError) as error:
+        raise SystemExit(f"Cannot load trusted routing-stage policy: {error}") from error
+    enabled_layers = enabled_copper_layers(board)
     for record in data.get("tracks", []):
         net = net_info_by_name.get(record.get("net"))
         if net is None:
@@ -392,13 +641,16 @@ def add_route_lock(board, pcbnew, spec: dict, net_info_by_name: dict, root: Path
                 item.SetMid(pcbnew.VECTOR2I(mm(record["mid"][0]), mm(record["mid"][1])))
             item.SetEnd(pcbnew.VECTOR2I(mm(record["end"][0]), mm(record["end"][1])))
             item.SetWidth(mm(record["width_mm"]))
-            item.SetLayer(board.GetLayerID(record["layer"]))
+            layer_name = str(record.get("layer", ""))
+            if layer_name not in enabled_layers:
+                raise SystemExit(f"Routing lock track layer is not enabled copper: {layer_name}")
+            item.SetLayer(enabled_layers[layer_name])
         elif record.get("type") == "via":
             item = pcbnew.PCB_VIA(board)
             item.SetPosition(pcbnew.VECTOR2I(mm(record["at"][0]), mm(record["at"][1])))
             item.SetWidth(mm(record["size_mm"]))
             item.SetDrill(mm(record["drill_mm"]))
-            item.SetLayerPair(board.GetLayerID(record["layers"][0]), board.GetLayerID(record["layers"][1]))
+            configure_locked_via(board, pcbnew, item, record, routing_policy)
         else:
             raise SystemExit("Routing lock contains unsupported track type")
         item.SetNet(net)
@@ -409,10 +661,30 @@ def add_route_lock(board, pcbnew, spec: dict, net_info_by_name: dict, root: Path
 def generate_board(spec: dict, output_dir: Path, include_routes: bool = True, root: Path | None = None) -> None:
     pcbnew = require_pcbnew()
     board = pcbnew.BOARD()
+    try:
+        copper_layers = validate_copper_layer_count(spec.get("board", {}).get("layers", {}).get("copper"))
+    except ValueError as error:
+        raise SystemExit(str(error)) from error
+    board.SetCopperLayerCount(copper_layers)
+    raw_stackup = spec.get("board", {}).get("stackup")
+    stackup = {} if raw_stackup is None else raw_stackup
+    if not isinstance(stackup, dict):
+        raise SystemExit("board.stackup must be a mapping")
+    board_thickness_mm = stackup.get("board_thickness_mm")
+    if board_thickness_mm is not None:
+        if (
+            not isinstance(board_thickness_mm, (int, float))
+            or isinstance(board_thickness_mm, bool)
+            or board_thickness_mm <= 0
+        ):
+            raise SystemExit("board.stackup.board_thickness_mm must be a positive number")
+        board.GetDesignSettings().SetBoardThickness(mm(board_thickness_mm))
+    elif stackup.get("layers"):
+        raise SystemExit("board.stackup.board_thickness_mm is required with physical stackup layers")
     net_info_by_name = {}
 
     net_names = {net["name"] for net in spec["nets"]}
-    for component in spec["components"]:
+    for component in electrical_components(spec):
         net_names.update(component.get("pads", {}).values())
 
     for net_name in sorted(net_names):
@@ -428,10 +700,12 @@ def generate_board(spec: dict, output_dir: Path, include_routes: bool = True, ro
         if footprint is None:
             raise SystemExit(f"Cannot load footprint {component['footprint']} from {footprint_dir}")
 
+        board_variant = apply_board_silkscreen_policy(footprint, pcbnew, spec)
+
         position = component["position_mm"]
         footprint.SetReference(component["ref"])
         footprint.SetValue(component.get("value", component["ref"]))
-        footprint.SetFPIDAsString(component["footprint"])
+        footprint.SetFPIDAsString("" if board_variant else component["footprint"])
         footprint.SetPosition(pcbnew.VECTOR2I(mm(position["x"]), mm(position["y"])))
         board.Add(footprint)
         side = str(position.get("side", component.get("side", "top"))).lower()
@@ -460,7 +734,12 @@ def generate_board(spec: dict, output_dir: Path, include_routes: bool = True, ro
         spec["board"]["fabrication"]["edge_cut_width_mm"],
     )
     board.BuildListOfNets()
-    board.Save(str(output_dir / f"{spec['project']['name']}.kicad_pcb"))
+    board_path = output_dir / f"{spec['project']['name']}.kicad_pcb"
+    board.Save(str(board_path))
+    try:
+        inject_physical_stackup(board_path, stackup)
+    except ValueError as error:
+        raise SystemExit(str(error)) from error
 
 
 def symbol_instance(
@@ -628,7 +907,7 @@ def symbol_pin_map(spec: dict) -> dict[str, dict]:
         visiting.remove(library_id)
         return pins
 
-    for component in spec["components"]:
+    for component in electrical_components(spec):
         collect_pins(component["symbol"])
     return pins_by_symbol
 
@@ -636,7 +915,7 @@ def symbol_pin_map(spec: dict) -> dict[str, dict]:
 def schematic_component_positions(spec: dict) -> dict[str, tuple[float, float]]:
     layout = spec["schematic"]["layout"]
     positions = {}
-    for index, component in enumerate(spec["components"]):
+    for index, component in enumerate(electrical_components(spec)):
         if "schematic_position_mm" in component:
             x = component["schematic_position_mm"]["x"]
             y = component["schematic_position_mm"]["y"]
@@ -697,7 +976,7 @@ def schematic_net_labels(spec: dict, component_positions: dict, symbol_pins: dic
     font_size = layout["font_size_mm"]
     stub_mm = layout["label_stub_mm"]
     blocks = []
-    for component in spec["components"]:
+    for component in electrical_components(spec):
         for pin_number, net_name in component.get("pads", {}).items():
             if str(pin_number) not in symbol_pins.get(component["symbol"], {}):
                 continue
@@ -716,7 +995,7 @@ def schematic_net_labels(spec: dict, component_positions: dict, symbol_pins: dic
 def schematic_net_wires(spec: dict, component_positions: dict, symbol_pins: dict) -> str:
     pins_by_net: dict[str, list[tuple[str, str, float, float, float]]] = {}
     font_size = spec["schematic"]["layout"]["font_size_mm"]
-    for component in spec["components"]:
+    for component in electrical_components(spec):
         for pin_number, net_name in component.get("pads", {}).items():
             if str(pin_number) not in symbol_pins.get(component["symbol"], {}):
                 continue
@@ -765,7 +1044,7 @@ def embedded_lib_symbols(spec: dict) -> str:
 
 
 def schematic_no_connects(spec: dict, component_positions: dict, symbol_pins: dict) -> str:
-    components_by_ref = {component["ref"]: component for component in spec["components"]}
+    components_by_ref = {component["ref"]: component for component in electrical_components(spec)}
     blocks = []
     for entry in spec.get("schematic", {}).get("no_connects", []):
         component = components_by_ref[entry["ref"]]
@@ -842,7 +1121,7 @@ def generate_schematic(spec: dict, output_dir: Path) -> None:
     symbol_pins = symbol_pin_map(spec)
     component_positions = schematic_component_positions(spec)
     symbol_lines = []
-    for component in spec["components"]:
+    for component in electrical_components(spec):
         x, y = component_positions[component["ref"]]
         symbol_lines.append(symbol_instance(component, x, y, project_name, layout, offsets, symbol_pins))
 
@@ -937,6 +1216,7 @@ def main(argv: list[str]) -> int:
     if not args.schematic_only:
         generate_board(spec, output_dir, include_routes=not args.layout_only, root=Path.cwd())
     build_project_file(spec, output_dir)
+    write_custom_drc_rules(spec, output_dir)
     write_library_audit(spec, output_dir)
     generate_bom(spec, output_dir)
     generate_todo(spec, output_dir)

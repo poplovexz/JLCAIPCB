@@ -34,6 +34,7 @@ closure_check="$skill_scripts_dir/spec_closure_check.py"
 part_selection_check="$skill_scripts_dir/part_selection_check.py"
 readiness_check="$skill_scripts_dir/readiness_preflight.py"
 verification_check="$skill_scripts_dir/verification_preflight.py"
+fabrication_capability_check="$skill_scripts_dir/fabrication_capability_gate.py"
 schema_check="$skill_scripts_dir/spec_schema_check.py"
 net_graph_check="$skill_scripts_dir/spec_net_graph_check.py"
 batch_check="$skill_scripts_dir/connectivity_batch_check.py"
@@ -47,8 +48,9 @@ layout_stage_check="$skill_scripts_dir/layout_stage_gate.py"
 routing_stage_check="$skill_scripts_dir/routing_stage_gate.py"
 local_validation_check="$skill_scripts_dir/local_validation_gate.py"
 production_manifest_check="$skill_scripts_dir/production_manifest_gate.py"
+evidence_manifest_check="$skill_scripts_dir/evidence_manifest_check.py"
 
-for check_script in "$requirement_intake_gate" "$flow_state_gate" "$beginner_intake_check" "$architecture_report" "$architecture_check" "$closure_check" "$part_selection_check" "$readiness_check" "$verification_check" "$schema_check" "$net_graph_check" "$autoroute_preflight_check" "$route_score_check" "$freeze_check" "$output_binding_check" "$schematic_stage_check" "$package_binding_stage_check" "$layout_stage_check" "$routing_stage_check" "$local_validation_check" "$production_manifest_check"; do
+for check_script in "$requirement_intake_gate" "$flow_state_gate" "$beginner_intake_check" "$architecture_report" "$architecture_check" "$closure_check" "$part_selection_check" "$readiness_check" "$verification_check" "$fabrication_capability_check" "$schema_check" "$net_graph_check" "$autoroute_preflight_check" "$route_score_check" "$freeze_check" "$output_binding_check" "$schematic_stage_check" "$package_binding_stage_check" "$layout_stage_check" "$routing_stage_check" "$local_validation_check" "$production_manifest_check" "$evidence_manifest_check"; do
   if [ ! -f "$check_script" ]; then
     echo "Missing kicad-production-pcb preflight script: $check_script" >&2
     exit 2
@@ -102,6 +104,7 @@ else
   python3 "$verification_check" "$spec"
   python3 "$schema_check" "$spec"
 fi
+python3 "$fabrication_capability_check" --check-outputs "$spec"
 python3 "$net_graph_check" --exact "$spec"
 python3 "$net_graph_check" --generated --strict-names "$spec"
 python3 "$schematic_stage_check" --check-evidence "$spec"
@@ -141,6 +144,9 @@ if [ "$target" = "jlcpcb" ]; then
     jlc_args+=(--order-ready)
   fi
   python3 scripts/jlcpcb_gate.py "${jlc_args[@]}" "$spec"
+  if [ "$order_ready_required" = "yes" ]; then
+    python3 "$evidence_manifest_check" --order-ready "$spec"
+  fi
   if [ "$production_required" = "yes" ]; then
     python3 "$production_manifest_check" --write "$spec"
     python3 "$production_manifest_check" --check "$spec"

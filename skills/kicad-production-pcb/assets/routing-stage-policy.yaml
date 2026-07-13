@@ -11,6 +11,46 @@ required_batch_fields: [id, order, nets, method, state, rationale]
 required_net_constraint_fields: [net_class, connection_mode, topology, allowed_layers, min_width_mm, max_vias, rationale]
 connection_modes: [tracks, zone, mixed]
 topologies: [point-to-point, daisy-chain, star, tree, plane, mixed]
+via_types:
+  default_type: through
+  definitions:
+    through:
+      pcbnew_enum: VIATYPE_THROUGH
+      ses_full_span_default: true
+      backdrill_allowed: true
+      full_span_required: true
+    blind:
+      pcbnew_enum: VIATYPE_BLIND
+      ses_full_span_default: false
+      backdrill_allowed: false
+      outer_endpoint_count: 1
+    buried:
+      pcbnew_enum: VIATYPE_BURIED
+      ses_full_span_default: false
+      backdrill_allowed: false
+      outer_endpoint_count: 0
+    microvia:
+      pcbnew_enum: VIATYPE_MICROVIA
+      ses_full_span_default: false
+      backdrill_allowed: false
+      adjacent_layers_required: true
+backdrill:
+  default_mode: none
+  validation:
+    require_stop_between_via_endpoints: true
+    require_drill_larger_than_via_drill: true
+    require_ordered_dual_stops: true
+  mode_enums:
+    none: BACKDRILL_MODE_NO_BACKDRILL
+    top: BACKDRILL_MODE_BACKDRILL_TOP
+    bottom: BACKDRILL_MODE_BACKDRILL_BOTTOM
+    both: BACKDRILL_MODE_BACKDRILL_BOTH
+  mode_sides:
+    none: []
+    top: [top]
+    bottom: [bottom]
+    both: [top, bottom]
+  sides: [top, bottom]
 topology_coordinate_tolerance_mm: 0.001
 required_differential_pair_fields: [id, nets, target_gap_mm, gap_tolerance_mm, max_skew_mm, min_coupled_ratio, rationale]
 differential_pair_sample_step_mm: 0.5

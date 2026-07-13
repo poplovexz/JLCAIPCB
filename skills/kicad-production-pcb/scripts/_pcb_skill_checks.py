@@ -169,6 +169,10 @@ def pin_id(ref: str, pad: str) -> str:
     return f"{ref}.{pad}"
 
 
+def component_is_electrical(component: Any) -> bool:
+    return isinstance(component, dict) and component.get("electrical") is not False
+
+
 def parse_pin(value: Any) -> tuple[str, str] | None:
     if isinstance(value, dict):
         ref = value.get("ref")
@@ -196,7 +200,7 @@ def endpoint_is_declared_point(value: Any) -> bool:
 def actual_net_graph(spec: dict[str, Any]) -> dict[str, list[str]]:
     graph: dict[str, list[str]] = {}
     for component in spec.get("components", []) if isinstance(spec.get("components"), list) else []:
-        if not isinstance(component, dict):
+        if not component_is_electrical(component):
             continue
         ref = component.get("ref")
         pads = component.get("pads")
@@ -234,6 +238,68 @@ def configured_validation(spec: dict[str, Any]) -> dict[str, Any]:
     return value if isinstance(value, dict) else {}
 
 
+def fabrication_capability_policy(result: CheckResult) -> dict[str, Any]:
+    policy_file = Path(__file__).resolve().parents[1] / "assets" / "fabrication-capability-policy.yaml"
+    try:
+        return load_yaml(policy_file)
+    except (OSError, ValueError, yaml.YAMLError) as error:
+        result.issue(f"Cannot load trusted fabrication capability policy {policy_file}: {error}")
+        return {}
+
+
+def validate_copper_layer_count(spec: dict[str, Any], result: CheckResult) -> None:
+    policy = fabrication_capability_policy(result)
+    rules = policy.get("copper_layers")
+    if not isinstance(rules, dict):
+        result.issue("Trusted fabrication capability policy copper_layers must be a mapping")
+        return
+    minimum = rules.get("min_count")
+    maximum = rules.get("max_count")
+    if (
+        not isinstance(minimum, int)
+        or isinstance(minimum, bool)
+        or not isinstance(maximum, int)
+        or isinstance(maximum, bool)
+    ):
+        result.issue("Trusted fabrication capability policy copper layer bounds must be integers")
+        return
+    value = get_path(spec, "board.layers.copper")
+    if not isinstance(value, int) or isinstance(value, bool):
+        result.issue("board.layers.copper must be an integer")
+        return
+    if value < minimum or value > maximum:
+        result.issue(f"board.layers.copper must be from {minimum} through {maximum}")
+    if rules.get("require_even") is True and value % 2:
+        result.issue("board.layers.copper must be even")
+
+
+def configured_copper_layer_names(
+    spec: dict[str, Any], result: CheckResult
+) -> list[str]:
+    issue_count = len(result.issues)
+    validate_copper_layer_count(spec, result)
+    if len(result.issues) != issue_count:
+        return []
+    policy = fabrication_capability_policy(result)
+    rules = policy.get("copper_layers")
+    if not isinstance(rules, dict):
+        result.issue("Trusted fabrication capability policy copper_layers must be a mapping")
+        return []
+    front = rules.get("front_name")
+    back = rules.get("back_name")
+    template = rules.get("inner_name_template")
+    if not all(string_value(value) for value in [front, back, template]):
+        result.issue("Trusted fabrication capability policy copper layer naming is incomplete")
+        return []
+    count = get_path(spec, "board.layers.copper")
+    try:
+        inner = [str(template).format(index=index) for index in range(1, int(count) - 1)]
+    except (KeyError, TypeError, ValueError) as error:
+        result.issue(f"Trusted fabrication capability policy inner layer template is invalid: {error}")
+        return []
+    return [str(front), *inner, str(back)]
+
+
 def expected_net_graph_config(spec: dict[str, Any]) -> dict[str, Any]:
     validation = configured_validation(spec)
     value = spec.get("expected_net_graph", validation.get("expected_net_graph", {}))
@@ -254,7 +320,7 @@ def check_schema(
 
     require_positive(spec, "board.size_mm.width", result)
     require_positive(spec, "board.size_mm.height", result)
-    require_positive(spec, "board.layers.copper", result)
+    validate_copper_layer_count(spec, result)
     for field in [
         "board.fabrication.min_track_width_mm",
         "board.fabrication.default_signal_width_mm",
@@ -285,13 +351,22 @@ def check_schema(
             continue
         ref = component.get("ref")
         ref_label = str(ref) if string_value(ref) else f"components[{index}]"
-        for field in ["ref", "value", "symbol", "footprint", "pads"]:
+        required_fields = ["ref", "value"]
+        if component_is_electrical(component):
+            required_fields.extend(["symbol", "footprint", "pads"])
+        for field in required_fields:
             if field not in component or component[field] in ("", None):
                 result.issue(f"{ref_label} missing required component field: {field}")
         if string_value(ref):
             if str(ref) in refs:
                 result.issue(f"Duplicate component ref: {ref}")
             refs.add(str(ref))
+        if not component_is_electrical(component):
+            if component.get("bom_only") is not True:
+                result.issue(f"{ref_label}.bom_only must be true when electrical is false")
+            if not string_value(component.get("host_ref")):
+                result.issue(f"{ref_label}.host_ref is required when electrical is false")
+            continue
         if split_library_id(component.get("symbol")) is None:
             result.issue(f"{ref_label}.symbol must use Library:Name form")
         if split_library_id(component.get("footprint")) is None:
@@ -317,6 +392,16 @@ def check_schema(
                         result.issue(f"{ref_label}.position_mm.{field} must be numeric")
         elif layout:
             result.issue(f"{ref_label}.position_mm is required for a frozen layout input")
+
+    for component in spec.get("components", []) if isinstance(spec.get("components"), list) else []:
+        if not isinstance(component, dict) or component_is_electrical(component):
+            continue
+        ref = str(component.get("ref", ""))
+        host_ref = str(component.get("host_ref", ""))
+        if host_ref not in refs:
+            result.issue(f"{ref}.host_ref references unknown component: {host_ref}")
+        elif host_ref == ref:
+            result.issue(f"{ref}.host_ref must reference another component")
 
     for index, route in enumerate(spec.get("routes", []) if isinstance(spec.get("routes"), list) else []):
         if not isinstance(route, dict):

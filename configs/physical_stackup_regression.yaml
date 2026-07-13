@@ -1,0 +1,29 @@
+schema_version: 1
+
+regression:
+  base_spec: specs/simple_led_test.yaml
+  generator: scripts/generate_project.py
+  generator_args: [--layout-only]
+  project_name: physical_stackup_regression
+  copper_layers: 6
+  stackup:
+    schema_version: 1
+    board_thickness_mm: 1.6
+    total_thickness_tolerance_mm: 0.001
+    total_thickness_scope: copper_and_dielectric
+    dielectric_constraints: true
+    edge_connector: bevelled
+    layers:
+      - {type: solder_mask, name: F.Mask, thickness_mm: 0.01, material: Solder-mask, epsilon_r: 3.4, loss_tangent: 0.03}
+      - {type: copper, name: F.Cu, thickness_mm: 0.035}
+      - {type: dielectric, name: dielectric_1, dielectric_type: prepreg, thickness_mm: 0.2, material: FR-4, epsilon_r: 4.2, loss_tangent: 0.02}
+      - {type: copper, name: In1.Cu, thickness_mm: 0.035}
+      - {type: dielectric, name: dielectric_2, dielectric_type: core, thickness_mm: 0.3, material: FR-4, epsilon_r: 4.2, loss_tangent: 0.02}
+      - {type: copper, name: In2.Cu, thickness_mm: 0.035}
+      - {type: dielectric, name: dielectric_3, dielectric_type: prepreg, thickness_mm: 0.39, material: FR-4, epsilon_r: 4.2, loss_tangent: 0.02}
+      - {type: copper, name: In3.Cu, thickness_mm: 0.035}
+      - {type: dielectric, name: dielectric_4, dielectric_type: core, thickness_mm: 0.3, material: FR-4, epsilon_r: 4.2, loss_tangent: 0.02}
+      - {type: copper, name: In4.Cu, thickness_mm: 0.035}
+      - {type: dielectric, name: dielectric_5, dielectric_type: prepreg, thickness_mm: 0.2, material: FR-4, epsilon_r: 4.2, loss_tangent: 0.02}
+      - {type: copper, name: B.Cu, thickness_mm: 0.035}
+      - {type: solder_mask, name: B.Mask, thickness_mm: 0.01, material: Solder-mask, epsilon_r: 3.4, loss_tangent: 0.03}

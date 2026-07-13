@@ -1,0 +1,56 @@
+schema_version: 1
+
+regression:
+  base_spec: specs/simple_led_test.yaml
+  generator: scripts/generate_project.py
+  generator_args: ["--layout-only"]
+  exporter: scripts/export_routing_batch_dsn.py
+  project_name_template: multilayer_{case_id}
+  batch:
+    id: MULTILAYER_SIGNAL
+    selected_net: LED_A
+    fallback_net_class: Default
+    locked_class: locked
+  cases:
+    - id: layers_6
+      copper_layers: 6
+      highest_inner_layer: In4.Cu
+    - id: layers_8
+      copper_layers: 8
+      highest_inner_layer: In6.Cu
+    - id: layers_10
+      copper_layers: 10
+      highest_inner_layer: In8.Cu
+    - id: layers_12
+      copper_layers: 12
+      highest_inner_layer: In10.Cu
+    - id: layers_14
+      copper_layers: 14
+      highest_inner_layer: In12.Cu
+    - id: layers_16
+      copper_layers: 16
+      highest_inner_layer: In14.Cu
+  negative_cases:
+    invalid_layer_counts:
+      - id: odd_layer_count
+        board_case: layers_6
+        copper_layers: 5
+        allowed_layer: In4.Cu
+        expected_error: must be even
+      - id: above_policy_maximum
+        board_case: layers_6
+        copper_layers: 34
+        allowed_layer: In4.Cu
+        expected_error: must be from
+    board_spec_mismatch:
+      id: board_spec_mismatch
+      board_case: layers_6
+      copper_layers: 8
+      allowed_layer: In4.Cu
+      expected_error: does not match spec board.layers.copper
+    disabled_allowed_layer:
+      id: disabled_allowed_layer
+      board_case: layers_6
+      copper_layers: 6
+      allowed_layer: In14.Cu
+      expected_error: not enabled copper layers
