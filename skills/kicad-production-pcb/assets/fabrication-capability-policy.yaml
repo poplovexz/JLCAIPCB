@@ -1,0 +1,219 @@
+schema_version: 1
+
+trigger:
+  required_project_stages:
+    - local-mvp
+    - production-package
+    - production
+    - release
+    - fabrication
+    - order-ready
+    - order-ready-blocked
+  explicit_validation_paths:
+    - validation.fabrication_capability.required
+  multilayer_min_copper_layers: 4
+  controlled_impedance_paths:
+    - path: board.constraint_dispositions.controlled_impedance.status
+      equals_any: [defined]
+    - path: verification.signal_integrity.differential_pairs
+      items_with_any_fields: [impedance_ohm, impedance_tolerance_ohm]
+    - path: verification.signal_integrity.single_ended_nets
+      items_with_any_fields: [impedance_ohm, impedance_tolerance_ohm]
+  special_via_paths:
+    - path: vias
+      type_fields: [via_type]
+    - path: routing.vias
+      type_fields: [via_type]
+    - path: board.vias
+      type_fields: [via_type]
+    - path: board.backdrills
+      fixed_type: backdrill
+    - path: routing.backdrills
+      fixed_type: backdrill
+    - path: routing.net_constraints
+      container: mapping_values
+      extractors:
+        - path: allowed_via_types
+          mode: scalar_list
+        - path: via_type_by_layer_pair
+          mode: mapping_list
+          type_fields: [via_type]
+        - path: backdrill.allowed
+          mode: boolean_feature
+          feature: backdrill
+        - path: backdrill.required
+          mode: boolean_feature
+          feature: backdrill
+  default_via_type: through
+  special_via_types: [blind, buried, microvia, laser_microvia, backdrill]
+  required_feature_names:
+    multilayer: multilayer
+    controlled_impedance: controlled_impedance
+
+copper_layers:
+  min_count: 2
+  max_count: 32
+  require_even: true
+  front_name: F.Cu
+  back_name: B.Cu
+  inner_name_template: In{index}.Cu
+  entry_type: copper
+
+physical_stackup:
+  spec_path: board.stackup
+  allowed_schema_versions: [1]
+  layers_field: layers
+  allowed_entry_types: [copper, dielectric, solder_mask]
+  allowed_dielectric_types: [core, prepreg]
+  dielectric_entry_type: dielectric
+  solder_mask_entry_type: solder_mask
+  solder_mask_layer_kicad_types:
+    F.Mask: Top Solder Mask
+    B.Mask: Bottom Solder Mask
+  required_solder_mask_names: [F.Mask, B.Mask]
+  core_sequence_entry_types: [copper, dielectric]
+  required_fields:
+    - schema_version
+    - board_thickness_mm
+    - total_thickness_tolerance_mm
+    - total_thickness_scope
+    - layers
+  required_copper_fields: [type, name, thickness_mm]
+  required_dielectric_fields:
+    - type
+    - name
+    - thickness_mm
+    - dielectric_type
+    - material
+    - epsilon_r
+    - loss_tangent
+  required_solder_mask_fields:
+    - type
+    - name
+    - thickness_mm
+    - material
+    - epsilon_r
+    - loss_tangent
+  board_thickness_field: board_thickness_mm
+  optional_total_thickness_alias_fields: [total_thickness_mm]
+  total_thickness_tolerance_field: total_thickness_tolerance_mm
+  total_thickness_scope_field: total_thickness_scope
+  allowed_total_thickness_scopes: [copper_and_dielectric]
+  total_thickness_entry_types: [copper, dielectric]
+  exclude_solder_mask_from_total_thickness: true
+  require_exact_copper_layer_order: true
+  require_alternating_entries: true
+  require_total_thickness_match: true
+  require_total_thickness_alias_match: true
+  numeric_epsilon_mm: 0.000001
+
+capability_evidence:
+  spec_path: manufacturing.fabrication_capability
+  manufacturer_id_field: manufacturer_id
+  requested_features_field: requested_features
+  process_dispositions_field: process_dispositions
+  evidence_field: evidence
+  descriptor_required_fields:
+    - path
+    - sha256
+    - captured_at
+    - max_age_hours
+    - source_url
+  allowed_file_extensions: [.yaml, .yml, .json]
+  allowed_source_url_schemes: [https]
+  manufacturer_source_registry:
+    jlcpcb:
+      allowed_host_regexes:
+        - '^(?:[a-z0-9-]+\.)*jlcpcb\.com$'
+  max_future_clock_skew_minutes: 5
+  maximum_descriptor_age_hours: 720
+  allowed_schema_versions: [1]
+  evidence_required_fields:
+    - schema_version
+    - manufacturer_id
+    - captured_at
+    - source_url
+    - capabilities
+  capabilities_required_fields:
+    - supported_copper_layer_counts
+    - supported_stackup_digests
+    - supported_process_features
+  supported_copper_layer_counts_field: supported_copper_layer_counts
+  supported_stackup_digests_field: supported_stackup_digests
+  supported_process_features_field: supported_process_features
+  artifact_patterns_field: artifact_patterns
+  artifact_pattern_required_fields: [role, path_glob, content_regex]
+  process_disposition_modes:
+    dedicated_fabrication_output:
+      output_field: outputs
+      required_fields: [outputs, artifact_patterns, rationale]
+    manufacturer_interpretation:
+      output_field: source_outputs
+      required_fields: [source_outputs, artifact_patterns, rationale]
+
+impedance_evidence:
+  spec_path: verification.signal_integrity.impedance_evidence
+  descriptor_required_fields:
+    - path
+    - sha256
+    - captured_at
+    - max_age_hours
+    - source_url
+  allowed_file_extensions: [.yaml, .yml, .json]
+  allowed_source_url_schemes: [https]
+  max_future_clock_skew_minutes: 5
+  maximum_descriptor_age_hours: 8760
+  allowed_schema_versions: [1]
+  evidence_required_fields:
+    - schema_version
+    - captured_at
+    - source_url
+    - stackup_digest
+    - targets
+  stackup_digest_field: stackup_digest
+  targets_field: targets
+  target_sources:
+    - path: verification.signal_integrity.differential_pairs
+      id_fields: [id, name]
+      nets_field: nets
+      target_field: impedance_ohm
+      tolerance_field: impedance_tolerance_ohm
+      geometry_field: geometry
+      required_geometry_fields: [layer, trace_width_mm, gap_mm, reference_layers]
+      positive_geometry_fields: [trace_width_mm, gap_mm]
+    - path: verification.signal_integrity.single_ended_nets
+      id_fields: [id, name]
+      net_field: net
+      target_field: impedance_ohm
+      tolerance_field: impedance_tolerance_ohm
+      geometry_field: geometry
+      required_geometry_fields: [layer, trace_width_mm, reference_layers]
+      positive_geometry_fields: [trace_width_mm]
+  required_target_fields: [id, nets, target_ohm, tolerance_ohm, geometry, model, result]
+  geometry_layer_field: layer
+  geometry_trace_width_field: trace_width_mm
+  geometry_gap_field: gap_mm
+  geometry_reference_layers_field: reference_layers
+  routing_binding:
+    net_constraints_path: routing.net_constraints
+    allowed_layers_field: allowed_layers
+    preferred_width_field: preferred_width_mm
+    max_neckdown_length_field: max_neckdown_length_mm
+    require_single_geometry_layer: true
+    require_zero_neckdown: true
+    differential_pairs_path: routing.differential_pairs
+    differential_pair_nets_field: nets
+    differential_pair_gap_field: target_gap_mm
+    require_exact_differential_net_order: true
+    numeric_epsilon: 0.000001
+  required_model_fields: [tool, version, method]
+  required_result_fields: [status, calculated_ohm]
+  allowed_result_statuses: [passed]
+  require_exact_target_coverage: true
+  require_exact_net_order: true
+
+output:
+  report_path_spec_field: validation.fabrication_capability.report_path
+  default_artifact_subdir: fabrication-capability
+  default_filename: fabrication-capability-gate.json
+  write_report_when_required: true

@@ -1,6 +1,6 @@
-schema_version: 3
-executor_version: 3
-manifest_schema_version: 3
+schema_version: 4
+executor_version: 4
+manifest_schema_version: 4
 
 freeze_status: frozen
 required_stage_values:
@@ -471,6 +471,20 @@ artifact_bindings:
       - production
     path_field: sourcing.downstream_binding.manifest.path
     expected_sha256_field: sourcing.downstream_binding.manifest.sha256
+  - id: fabrication_capability_evidence
+    tiers:
+      - local_mvp
+      - production
+    path_field: manufacturing.fabrication_capability.evidence.path
+    expected_sha256_field: manufacturing.fabrication_capability.evidence.sha256
+    optional: true
+  - id: impedance_evidence
+    tiers:
+      - local_mvp
+      - production
+    path_field: verification.signal_integrity.impedance_evidence.path
+    expected_sha256_field: verification.signal_integrity.impedance_evidence.sha256
+    optional: true
 
 preflight:
   local_mvp:
@@ -498,6 +512,9 @@ preflight:
       args: []
     - id: verification
       script: verification_preflight.py
+      args: []
+    - id: fabrication_capability
+      script: fabrication_capability_gate.py
       args: []
     - id: schema
       script: spec_schema_check.py
@@ -543,6 +560,9 @@ preflight:
       script: verification_preflight.py
       args:
         - --strict
+    - id: fabrication_capability
+      script: fabrication_capability_gate.py
+      args: []
     - id: schema
       script: spec_schema_check.py
       args:
